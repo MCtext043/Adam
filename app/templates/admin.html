@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Админ-панель | Кафе Адам</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body class="admin-body">
+  <header class="admin-header">
+    <a class="brand" href="/">
+      <span class="brand-mark">
+        <img src="/static/img/adam-logo.png" alt="Логотип кафе Адам">
+      </span>
+      <span>Кафе Адам</span>
+    </a>
+    <div>
+      <p class="eyebrow">Админ-панель</p>
+      <h1>Текущие заказы</h1>
+    </div>
+    <a class="button button-light" href="/">На сайт</a>
+  </header>
+
+  <main class="admin-main">
+    <section class="admin-toolbar">
+      <p>Здесь кухня видит, что нужно приготовить, телефон клиента и адрес доставки.</p>
+      <button class="button button-dark" id="refreshOrders" type="button">Обновить</button>
+    </section>
+    <section class="orders-grid" id="orders"></section>
+  </main>
+
+  <script>
+    window.ORDER_STATUSES = {{ statuses | tojson }};
+  </script>
+  <script src="/static/js/admin.js"></script>
+</body>
+</html>

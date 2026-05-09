@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Кафе Адам | Доставка</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+  <header class="hero">
+    <nav class="topbar">
+      <a class="brand" href="/">
+        <span class="brand-mark">
+          <img src="/static/img/adam-logo.png" alt="Логотип кафе Адам">
+        </span>
+        <span>Кафе Адам</span>
+      </a>
+      <div class="topbar-links">
+        <a href="#menu">Меню</a>
+        <a href="#cart">Корзина</a>
+        <a href="/admin">Админ</a>
+      </div>
+    </nav>
+    <div class="hero-grid">
+      <section class="hero-copy">
+        <p class="eyebrow">Вкус, гостеприимство, традиции</p>
+        <h1>Доставка блюд кафе «Адам»</h1>
+        <p>Горячие блюда, сеты, выпечка, салаты и напитки с доставкой по городу. Соберите заказ, оставьте адрес, а кухня увидит его в админ-панели.</p>
+        <a class="button button-dark" href="#menu">Выбрать блюда</a>
+      </section>
+    </div>
+  </header>
+
+  <main>
+    <section class="section-heading" id="menu">
+      <p class="eyebrow">Меню доставки</p>
+      <h2>Популярные блюда</h2>
+    </section>
+
+    <section class="layout">
+      <div class="menu-column">
+        <section class="menu-controls" aria-label="Поиск и фильтры меню">
+          <label class="search-field">
+            Поиск по меню
+            <input id="menuSearch" type="search" placeholder="Например: шашлык, салат, морс">
+          </label>
+          <div class="filter-block">
+            <span>Категории</span>
+            <div class="category-filters" id="categoryFilters"></div>
+          </div>
+          <button class="link-button" id="resetFilters" type="button">Сбросить фильтры</button>
+        </section>
+        <p class="filter-summary" id="filterSummary"></p>
+        <div class="catalog" id="products"></div>
+      </div>
+
+      <aside class="cart-panel" id="cart">
+        <div class="cart-header">
+          <div>
+            <p class="eyebrow">Ваш заказ</p>
+            <h2>Корзина</h2>
+          </div>
+          <button class="link-button" id="clearCart" type="button">Очистить</button>
+        </div>
+
+        <div class="cart-list" id="cartItems"></div>
+        <div class="cart-total">
+          <span>Итого</span>
+          <strong id="cartTotal">0 ₽</strong>
+        </div>
+
+        <form class="order-form" id="orderForm">
+          <label>
+            Имя
+            <input name="customer_name" type="text" placeholder="Адам" required minlength="2">
+          </label>
+          <label>
+            Телефон
+            <input name="phone" type="tel" placeholder="+7 999 000-00-00" required minlength="5">
+          </label>
+          <label>
+            Адрес доставки
+            <textarea name="address" placeholder="Улица, дом, квартира" required minlength="8"></textarea>
+          </label>
+          <label>
+            Комментарий
+            <textarea name="comment" placeholder="Например: не звонить в домофон"></textarea>
+          </label>
+          <button class="button button-dark" type="submit">Оформить заказ</button>
+          <p class="form-message" id="orderMessage"></p>
+        </form>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Кафе «Адам»</span>
+    <span>Доставка в классическом стиле</span>
+  </footer>
+
+  <script src="/static/js/storefront.js"></script>
+</body>
+</html>

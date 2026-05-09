@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: adam-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: adam_delivery
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - adam_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  adam_postgres_data:
