@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Регистрация | Кафе Адам{% endblock %}
+{% block page %}register{% endblock %}
+{% block content %}
+<main class="page-main narrow-top auth-page">
+  <header class="section-heading section-heading-tight">
+    <h1>Регистрация</h1>
+    <p class="auth-sub">Накапливайте бонусы с заказов.</p>
+  </header>
+  <form class="order-form auth-form" id="registerForm">
+    <label>
+      Имя
+      <input name="display_name" type="text" required minlength="2" maxlength="120">
+    </label>
+    <label>
+      Email
+      <input name="email" type="email" autocomplete="email" required>
+    </label>
+    <label>
+      Телефон
+      <input name="phone" type="tel" autocomplete="tel" placeholder="по желанию">
+    </label>
+    <label>
+      Пароль
+      <input name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="128" placeholder="не менее 8 символов">
+    </label>
+    <button class="button button-dark" type="submit">Зарегистрироваться</button>
+    <p class="form-message" id="authMessage"></p>
+    <div class="auth-actions-row">
+      <a class="button button-ghost button-sm" href="/login">Вход</a>
+    </div>
+  </form>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/auth.js"></script>
+{% endblock %}

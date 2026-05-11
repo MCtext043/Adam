@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Личный кабинет | Кафе Адам{% endblock %}
+{% block page %}account{% endblock %}
+{% block content %}
+<main class="page-main narrow-top auth-page">
+  <header class="section-heading section-heading-tight">
+    <h1>Личный кабинет</h1>
+    <p class="auth-sub" id="accountLead"></p>
+  </header>
+  <div class="account-card" id="accountCard" hidden>
+    <p class="account-balance">Баллы: <strong id="loyaltyPoints">0</strong></p>
+    <p class="account-note">Бонусы начисляются после заказа.</p>
+    <div class="auth-actions-row">
+      <a class="button button-dark button-sm" href="/menu">Меню</a>
+    </div>
+  </div>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/auth.js"></script>
+{% endblock %}

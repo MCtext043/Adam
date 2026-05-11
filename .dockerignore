@@ -1,0 +1,12 @@
+.venv
+.git
+.idea
+__pycache__
+*.py[cod]
+.env
+.env.*
+!.env.example
+*.md
+.cursor
+terminals
+assets

@@ -1,0 +1,27 @@
+<header class="site-header">
+  <nav class="topbar topbar-condensed" aria-label="Основное меню сайта">
+    <div class="topbar-primary">
+      <a class="brand" href="/">
+        <span class="brand-mark">
+          <img src="/static/img/adam-logo.png" alt="Кафе Адам">
+        </span>
+        <span>Кафе Адам</span>
+      </a>
+      <button type="button" class="nav-menu-toggle" id="navMenuToggle" aria-expanded="false" aria-controls="primaryNavLinks" aria-label="Меню">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="topbar-links" id="primaryNavLinks">
+      <a class="nav-btn" href="/">Главная</a>
+      <a class="nav-btn" href="/menu">Меню</a>
+      <a class="nav-btn nav-btn-cart" href="/cart">
+        Корзина
+        <span id="navCartBadge" class="cart-badge hidden" aria-hidden="true">0</span>
+      </a>
+      <span class="auth-nav-slot" id="authNavSlot">
+        <a class="nav-btn" href="/login">Войти</a>
+        <a class="nav-btn nav-btn-accent" href="/register">Регистрация</a>
+      </span>
+    </div>
+  </nav>
+</header>

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Корзина | Кафе Адам{% endblock %}
+{% block page %}cart{% endblock %}
+{% block content %}
+<main class="page-main narrow-top">
+  <header class="section-heading section-heading-tight">
+    <p class="eyebrow">Ваш заказ</p>
+    <h1>Корзина</h1>
+    <div class="page-actions">
+      <a class="button button-ghost button-sm" href="/menu">В меню</a>
+    </div>
+  </header>
+
+  <div class="cart-page-panel">
+    <div class="cart-header">
+      <h2 class="sr-only">Состав заказа</h2>
+      <button class="button button-ghost button-sm" id="clearCart" type="button">Очистить</button>
+    </div>
+    <div class="cart-list" id="cartItems"></div>
+    <div class="cart-total">
+      <span>Итого</span>
+      <strong id="cartTotal">0 ₽</strong>
+    </div>
+    <div class="cart-actions">
+      <a class="button button-dark" id="goCheckout" href="/checkout">Оформить заказ</a>
+    </div>
+    <p class="cart-hint" id="checkoutHint"></p>
+  </div>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/storefront.js"></script>
+{% endblock %}

@@ -33,6 +33,7 @@ function renderOrders(orders) {
             <span class="status-pill">${statusLabels[order.status] || order.status}</span>
           </div>
           <p><strong>${order.customer_name}</strong> · ${order.phone}</p>
+          ${order.customer_email ? `<p><strong>Email:</strong> ${order.customer_email}</p>` : ""}
           <p class="order-address"><strong>Адрес:</strong> ${order.address}</p>
           ${order.comment ? `<p><strong>Комментарий:</strong> ${order.comment}</p>` : ""}
           <div class="order-lines">
@@ -65,7 +66,11 @@ function renderOrders(orders) {
 
 async function loadOrders() {
   ordersEl.innerHTML = `<article class="order-card"><p>Загрузка заказов...</p></article>`;
-  const response = await fetch("/api/admin/orders");
+  const response = await fetch("/api/admin/orders", { credentials: "same-origin" });
+  if (response.status === 401) {
+    window.location.href = "/admin/login";
+    return;
+  }
   const orders = await response.json();
   renderOrders(orders);
 }
@@ -74,8 +79,14 @@ async function updateStatus(orderId, status) {
   const response = await fetch(`/api/admin/orders/${orderId}/status`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
     body: JSON.stringify({ status }),
   });
+
+  if (response.status === 401) {
+    window.location.href = "/admin/login";
+    return;
+  }
 
   if (!response.ok) {
     alert("Не удалось обновить статус заказа");

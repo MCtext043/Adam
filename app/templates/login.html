@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Вход | Кафе Адам{% endblock %}
+{% block page %}login{% endblock %}
+{% block content %}
+<main class="page-main narrow-top auth-page">
+  <header class="section-heading section-heading-tight">
+    <h1>Вход</h1>
+    <p class="auth-sub">Бонусы после заказов для зарегистрированных гостей.</p>
+  </header>
+  <form class="order-form auth-form" id="loginForm">
+    <label>
+      Email
+      <input name="email" type="email" autocomplete="username" required>
+    </label>
+    <label>
+      Пароль
+      <input name="password" type="password" autocomplete="current-password" required minlength="8">
+    </label>
+    <button class="button button-dark" type="submit">Войти</button>
+    <p class="form-message" id="authMessage"></p>
+    <div class="auth-actions-row">
+      <a class="button button-ghost button-sm" href="/register">Регистрация</a>
+    </div>
+  </form>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/auth.js"></script>
+{% endblock %}

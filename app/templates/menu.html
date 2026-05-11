@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Меню | Кафе Адам{% endblock %}
+{% block page %}menu{% endblock %}
+{% block content %}
+<main class="page-main narrow-top">
+  <header class="section-heading section-heading-tight">
+    <p class="eyebrow">Меню доставки</p>
+    <h1>Блюда</h1>
+  </header>
+
+  <section class="layout layout-single">
+    <div class="menu-column">
+      <section class="menu-controls" aria-label="Поиск и категории">
+        <label class="search-field">
+          Поиск
+          <input id="menuSearch" type="search" placeholder="Шашлык, салат…" autocomplete="off">
+        </label>
+        <div class="filter-block">
+          <span class="filter-label">Категории</span>
+          <div class="category-filters-shell">
+            <div class="category-filters" id="categoryFilters"></div>
+          </div>
+        </div>
+        <button class="button button-ghost button-sm menu-reset-btn" id="resetFilters" type="button">Сбросить</button>
+      </section>
+      <div class="catalog" id="products"></div>
+    </div>
+  </section>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/storefront.js"></script>
+{% endblock %}

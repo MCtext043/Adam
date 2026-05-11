@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Оформление заказа | Кафе Адам{% endblock %}
+{% block page %}checkout{% endblock %}
+{% block content %}
+<main class="page-main narrow-top">
+  <header class="section-heading section-heading-tight">
+    <p class="eyebrow">Доставка</p>
+    <h1>Оформление заказа</h1>
+  </header>
+
+  <div class="checkout-grid">
+    <aside class="checkout-summary cart-panel" aria-label="Состав заказа">
+      <p class="eyebrow">В корзине</p>
+      <div class="cart-list" id="checkoutCartItems"></div>
+      <div class="cart-total">
+        <span>Итого</span>
+        <strong id="checkoutCartTotal">0 ₽</strong>
+      </div>
+      <p class="bonus-preview" id="bonusPreview"></p>
+      <div class="checkout-edit-row">
+        <a class="button button-ghost button-sm" href="/cart">Корзина</a>
+        <a class="button button-ghost button-sm" href="/menu">Меню</a>
+      </div>
+    </aside>
+
+    <section class="checkout-form-wrap">
+      <div class="account-banner" id="accountBanner" hidden></div>
+      <form class="order-form" id="orderForm">
+        <label>
+          Имя
+          <input name="customer_name" type="text" placeholder="Как к вам обращаться" required minlength="2">
+        </label>
+        <label>
+          Телефон
+          <input name="phone" type="tel" placeholder="+7 999 000-00-00" required minlength="5">
+        </label>
+        <label>
+          Email
+          <input name="email" type="email" placeholder="для письма с заказом" id="orderEmail">
+        </label>
+        <label>
+          Адрес доставки
+          <textarea name="address" placeholder="Улица, дом, квартира" required minlength="8"></textarea>
+        </label>
+        <label>
+          Комментарий
+          <textarea name="comment" placeholder="Например: не звонить в домофон"></textarea>
+        </label>
+        <button class="button button-dark" type="submit">Отправить заказ</button>
+        <p class="form-message" id="orderMessage"></p>
+      </form>
+    </section>
+  </div>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/storefront.js"></script>
+{% endblock %}

@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}Кафе Адам | Доставка{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body class="{% block body_class %}{% endblock %}" data-page="{% block page %}home{% endblock %}">
+  {% include "includes/nav.html" %}
+  {% block content %}{% endblock %}
+  {% include "includes/footer.html" %}
+  <div id="toastHost" class="toast-host" aria-live="polite"></div>
+  <script src="/static/js/site.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
