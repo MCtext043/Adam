@@ -1,4 +1,5 @@
 const productsEl = document.querySelector("#products");
+const homeFeaturedProductsEl = document.querySelector("#homeFeaturedProducts");
 const cartItemsEl = document.querySelector("#cartItems");
 const cartTotalEl = document.querySelector("#cartTotal");
 const checkoutCartItemsEl = document.querySelector("#checkoutCartItems");
@@ -98,22 +99,31 @@ function renderProducts() {
   const filteredProducts = getFilteredProducts();
 
   productsEl.innerHTML = filteredProducts.length
-    ? filteredProducts
-        .map(
-          (product) => `
-        <article class="product-card">
-          <img src="${product.image_url}" alt="${product.name}" loading="lazy" width="900" height="600">
-          <div class="product-content">
-            <span class="product-category">${product.category}</span>
-            <h3>${product.name}</h3>
-            <p>${product.description}</p>
-            ${productFooterHtml(product)}
-          </div>
-        </article>
-      `,
-        )
-        .join("")
+    ? filteredProducts.map((product) => productCardHtml(product)).join("")
     : `<p class="cart-empty">По этим фильтрам ничего не найдено. Попробуйте другой запрос или категорию.</p>`;
+}
+
+function productCardHtml(product) {
+  return `
+    <article class="product-card">
+      <img src="${product.image_url}" alt="${product.name}" loading="lazy" width="900" height="600">
+      <div class="product-content">
+        <span class="product-category">${product.category}</span>
+        <h3>${product.name}</h3>
+        <p>${product.description}</p>
+        ${productFooterHtml(product)}
+      </div>
+    </article>
+  `;
+}
+
+function renderHomeFeaturedProducts() {
+  if (!homeFeaturedProductsEl) return;
+
+  const featured = products.slice(0, 4);
+  homeFeaturedProductsEl.innerHTML = featured.length
+    ? featured.map((product) => productCardHtml(product)).join("")
+    : `<p class="cart-empty">Меню скоро появится.</p>`;
 }
 
 function renderCartList(targetItemsEl, targetTotalEl) {
@@ -148,6 +158,7 @@ function renderCartList(targetItemsEl, targetTotalEl) {
   updateCheckoutChrome(total, entries.length);
 
   if (page === "menu") renderProducts();
+  renderHomeFeaturedProducts();
   if (goCheckout) {
     goCheckout.classList.toggle("is-disabled", entries.length === 0);
     goCheckout.setAttribute("aria-disabled", entries.length === 0 ? "true" : "false");
@@ -207,6 +218,19 @@ function decreaseCartItem(productId) {
 }
 
 productsEl?.addEventListener("click", (event) => {
+  const addButton = event.target.closest("[data-add]");
+  const increaseButton = event.target.closest("[data-increase]");
+  const decreaseButton = event.target.closest("[data-decrease]");
+  if (addButton) {
+    const product = products.find((item) => item.id === Number(addButton.dataset.add));
+    addToCart(addButton.dataset.add, product?.name);
+    return;
+  }
+  if (increaseButton) addToCart(increaseButton.dataset.increase);
+  if (decreaseButton) decreaseCartItem(decreaseButton.dataset.decrease);
+});
+
+homeFeaturedProductsEl?.addEventListener("click", (event) => {
   const addButton = event.target.closest("[data-add]");
   const increaseButton = event.target.closest("[data-increase]");
   const decreaseButton = event.target.closest("[data-decrease]");
@@ -343,6 +367,7 @@ async function loadProducts() {
   products = await response.json();
   renderCategoryFilters();
   renderProducts();
+  renderHomeFeaturedProducts();
   renderCart();
   renderCheckoutCart();
 }
@@ -364,6 +389,9 @@ async function boot() {
   } catch {
     if (productsEl) {
       productsEl.innerHTML = `<p class="cart-empty">Не удалось загрузить меню. Проверьте подключение к PostgreSQL и запуск сервера.</p>`;
+    }
+    if (homeFeaturedProductsEl) {
+      homeFeaturedProductsEl.innerHTML = `<p class="cart-empty">Не удалось загрузить блюда.</p>`;
     }
   }
 }

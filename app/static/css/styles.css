@@ -362,6 +362,57 @@ main {
   min-width: 0;
 }
 
+/* Главная: сначала столбец на телефоне, затем 2 и 4 колонки на больших экранах */
+.home-featured-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  min-width: 0;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .home-featured-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-featured-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 22px;
+  }
+}
+
+.home-featured-grid .product-card {
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (max-width: 639px) {
+  .home-featured-grid .product-content h3 {
+    font-size: 1.15rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
+
+  .home-featured-grid .product-content p {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .home-featured-head h2 {
+    font-size: clamp(22px, 6vw, 28px);
+    line-height: 1.2;
+  }
+}
+
 .product-card,
 .cart-panel,
 .order-card,
@@ -694,6 +745,15 @@ main {
   h1 {
     font-size: 46px;
   }
+
+  .home-main {
+    padding-top: 22px;
+  }
+
+  .home-featured {
+    padding: 16px;
+    border-radius: 26px;
+  }
 }
 
 /* --- Multi-page layout, mobile nav, toast, checkout --- */
@@ -837,6 +897,64 @@ main {
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 8px;
+}
+
+.home-main {
+  padding-top: 36px;
+}
+
+.home-featured {
+  padding: clamp(18px, 4vw, 28px);
+  border: 1px solid rgba(32, 25, 21, 0.1);
+  border-radius: 32px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(217, 200, 173, 0.22)),
+    rgba(255, 255, 255, 0.68);
+  box-shadow: 0 18px 48px rgba(32, 25, 21, 0.08);
+}
+
+.home-featured-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.home-featured-head h2 {
+  margin: 0;
+}
+
+.home-menu-btn {
+  flex: 0 0 auto;
+}
+
+/* После базового .home-featured-head: на телефоне колонка и текст влево (базовый align-items: flex-end иначе прижимает блоки вправо) */
+@media (max-width: 620px) {
+  .home-featured-head {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 14px;
+  }
+
+  .home-featured-head > div:first-child {
+    width: 100%;
+    text-align: left;
+  }
+
+  .home-featured-head .eyebrow {
+    text-align: left;
+  }
+
+  .home-featured-head h2 {
+    text-align: left;
+  }
+
+  .home-menu-btn {
+    width: 100%;
+    align-self: stretch;
+  }
 }
 
 .page-main {
