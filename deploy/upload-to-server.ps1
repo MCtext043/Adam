@@ -42,22 +42,79 @@ try {
         "ADMIN_PASSWORD"
     )
 
-    $envLines = @()
-    foreach ($line in Get-Content ".env") {
+    function Normalize-SmtpFrom([string]$Value, [string]$SmtpUser) {
+        if ($Value -match '<([^>]+@[^>]+)>') {
+            return $Matches[1].Trim()
+        }
+        if ($Value -match '@' -and $Value -notmatch '\s') {
+            return $Value.Trim()
+        }
+        if ($SmtpUser) {
+            return $SmtpUser.Trim()
+        }
+        return $Value.Trim()
+    }
+
+    $vars = @{}
+    foreach ($line in Get-Content ".env" -Encoding utf8) {
         if ($line -match "^\s*#" -or $line -notmatch "=") {
             continue
         }
-
         $key = ($line -split "=", 2)[0].Trim()
-        $value = ($line -split "=", 2)[1].Trim()
+        $value = ($line -split "=", 2)[1].Trim().Trim('"').Trim("'")
+        $vars[$key] = $value
+    }
 
-        if ($alwaysKeys -contains $key) {
-            $envLines += $line
-            continue
+    $smtpUser = $vars["SMTP_USER"]
+    if (-not $smtpUser -and $vars.ContainsKey("SMTP_FROM")) {
+        $smtpUser = Normalize-SmtpFrom $vars["SMTP_FROM"] ""
+        if ($smtpUser) {
+            $vars["SMTP_USER"] = $smtpUser
+            Write-Host "SMTP_USER taken from SMTP_FROM: $smtpUser"
         }
+    }
 
-        if (($optionalKeys -contains $key) -and $value -and ($value -notmatch "замените_")) {
-            $envLines += $line
+    if ($vars.ContainsKey("SMTP_HOST") -and $vars["SMTP_HOST"]) {
+        $missing = @()
+        if (-not $vars["SMTP_USER"]) { $missing += "SMTP_USER" }
+        if (-not $vars["SMTP_PASSWORD"]) { $missing += "SMTP_PASSWORD" }
+        if ($missing.Count -gt 0) {
+            throw "Local .env: SMTP_HOST is set but missing: $($missing -join ', '). Add them before deploy."
+        }
+    }
+
+    $envLines = @()
+    foreach ($key in $alwaysKeys) {
+        if (-not $vars.ContainsKey($key)) { continue }
+        $value = $vars[$key]
+        if ($key -eq "SMTP_FROM") {
+            $value = Normalize-SmtpFrom $value $smtpUser
+            if (-not $vars["SMTP_USER"]) {
+                $vars["SMTP_USER"] = $value
+            }
+        }
+        $envLines += "$key=$value"
+    }
+
+    # Всегда корректное UTF-8 имя отправителя (в .env часто cp1251 -> кракозябры в почте)
+    $cafeFromName = -join @(
+        [char]0x041A, [char]0x0430, [char]0x0444, [char]0x0435, " ",
+        [char]0x00AB, [char]0x0410, [char]0x0434, [char]0x0430, [char]0x043C, [char]0x00BB
+    )
+    $envLines = @($envLines | Where-Object { $_ -notmatch "^SMTP_FROM_NAME=" })
+    $envLines += "SMTP_FROM_NAME=$cafeFromName"
+
+    if ($envLines.Count -gt 0) {
+        $synced = @($alwaysKeys | Where-Object { $vars.ContainsKey($_) })
+        Write-Host "SMTP keys to sync on server: $($synced -join ', ')"
+    } else {
+        Write-Host "WARNING: no SMTP keys in local .env - server mail settings will be REMOVED on deploy."
+    }
+    foreach ($key in $optionalKeys) {
+        if (-not $vars.ContainsKey($key)) { continue }
+        $value = $vars[$key]
+        if ($value -and ($value -notmatch "замените_")) {
+            $envLines += "$key=$value"
         }
     }
 
@@ -84,50 +141,12 @@ Assert-LastExitCode "Upload archive"
 scp $smtpEnv "${User}@${Server}:/tmp/adam-smtp.env"
 Assert-LastExitCode "Upload env"
 
-$remoteScript = @"
-set -eu
-mkdir -p $RemoteDir
-cd $RemoteDir
-
-if [ -f .env ]; then
-  cp .env ".env.backup.`$(date +%Y%m%d%H%M%S)"
-else
-  touch .env
-fi
-
-# Normalize old Windows/BOM env content left from previous deploy attempts.
-sed -i 's/\xEF\xBB\xBF//g; s/\r$//' .env
-
-# Remove app-level values refreshed from local .env; keep server DB/port values.
-for key in SMTP_HOST SMTP_PORT SMTP_USE_TLS SMTP_USER SMTP_PASSWORD SMTP_FROM SMTP_FROM_NAME SESSION_SECRET ADMIN_USERNAME ADMIN_PASSWORD; do
-  sed -i "/^`${key}=/d" .env
-done
-
-cat /tmp/adam-smtp.env >> .env
-sed -i 's/\xEF\xBB\xBF//g; s/\r$//' .env
-tar -xzf /tmp/adam-deploy.tar.gz -C $RemoteDir
-
-docker compose --profile app up -d --build
-docker compose ps
-
-echo "Waiting for app health..."
-for i in `$(seq 1 30); do
-  if curl -fsS "http://127.0.0.1:`${APP_PORT:-8010}/health"; then
-    echo
-    echo "Health check passed."
-    rm -f /tmp/adam-deploy.tar.gz /tmp/adam-smtp.env /tmp/adam-deploy-remote.sh
-    exit 0
-  fi
-  sleep 2
-done
-
-echo "Health check failed. Last app logs:"
-docker logs --tail=120 adam-web || true
-exit 1
-"@
-
-# PowerShell pipes CRLF to SSH and breaks bash (set: invalid option name pipefail).
-$remoteScriptUnix = ($remoteScript -replace "`r`n", "`n") -replace "`r", "`n"
+$remoteShTemplate = Join-Path $PSScriptRoot "remote-deploy.sh"
+if (-not (Test-Path $remoteShTemplate)) {
+    throw "Missing deploy/remote-deploy.sh"
+}
+$remoteScriptUnix = (Get-Content $remoteShTemplate -Raw).Replace('__REMOTE_DIR__', $RemoteDir)
+$remoteScriptUnix = ($remoteScriptUnix -replace "`r`n", "`n") -replace "`r", "`n"
 [System.IO.File]::WriteAllText($remoteSh, $remoteScriptUnix, $utf8NoBom)
 
 Write-Host "Uploading remote deploy script."

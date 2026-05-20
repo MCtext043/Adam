@@ -5,7 +5,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Annotated, Generator
 
-from app.email_service import send_order_email
+from app.email_service import send_order_email, smtp_ready
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -223,6 +223,13 @@ def on_startup() -> None:
     migrate_schema()
     seed_products()
     seed_app_settings()
+    if smtp_ready():
+        from app.email_service import resolve_sender
+
+        host, user, _, mail_from, port, use_tls = resolve_sender()
+        print(f"[smtp] enabled {host}:{port} from={mail_from} user={user} tls={use_tls}")
+    else:
+        print("[smtp] disabled — set SMTP_HOST and SMTP_USER in .env")
 
 
 def gallery_photo_urls() -> list[str]:
@@ -583,6 +590,12 @@ def create_order(payload: OrderCreate, request: Request, db: Db) -> dict:
         email_for_order = str(payload.email).strip()
     elif customer is not None:
         email_for_order = customer.email
+
+    if smtp_ready() and not email_for_order:
+        raise HTTPException(
+            status_code=400,
+            detail="Укажите email — на него отправим подтверждение заказа.",
+        )
 
     settings = get_app_settings(db)
     min_order = settings.min_order_amount

@@ -2,28 +2,73 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import re
 import smtplib
 import ssl
 from decimal import Decimal
 from email.header import Header
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+from email.message import EmailMessage
 from email.utils import formataddr
 from typing import Any
+
+logger = logging.getLogger(__name__)
+
+
+def _env(name: str, default: str = "") -> str:
+    raw = os.getenv(name, default)
+    if raw is None:
+        return default
+    return raw.strip().strip('"').strip("'").strip()
+
+
+def normalize_display_name(raw: str) -> str:
+    """Имя отправителя: только нормальный Unicode, без кракозябр из .env."""
+    name = (raw or "").strip() or "Кафе «Адам»"
+    # UTF-8, прочитанный как cp1251: "РљР°С„Рµ РђРґР°Рј"
+    if "РљР°" in name or "РђРґ" in name or "Ð" in name:
+        return "Кафе «Адам»"
+    return name
+
 
 def parse_smtp_address(raw: str, fallback: str) -> str:
     """Оставляет только email для envelope SMTP (без «Имя <addr>»)."""
     value = (raw or "").strip()
     if not value:
         return fallback
-    angle = re.search(r"<([^>]+)>", value)
+    angle = re.search(r"<([^>]+@[^>]+)>", value)
     if angle:
         return angle.group(1).strip()
     if "@" in value and " " not in value:
         return value
+    # «Кафе Адам <user@yandex.ru>» без угловых скобок — взять fallback
+    if "@" not in value:
+        return fallback
     return fallback
+
+
+def resolve_sender() -> tuple[str, str, str, str, int, bool]:
+    """host, user, password, mail_from, port, use_tls."""
+    host = _env("SMTP_HOST")
+    port = int(_env("SMTP_PORT", "587") or "587")
+    user = _env("SMTP_USER")
+    password = _env("SMTP_PASSWORD")
+    use_tls = _env("SMTP_USE_TLS", "true").lower() in ("1", "true", "yes")
+    mail_from = parse_smtp_address(_env("SMTP_FROM"), user) or user
+    if not user and mail_from and "@" in mail_from:
+        user = mail_from
+    if not mail_from and user:
+        mail_from = user
+    # Yandex: отправитель = учётная запись SMTP
+    if "yandex" in host.lower():
+        if user:
+            mail_from = user
+        elif mail_from:
+            user = mail_from
+    if mail_from and "@" not in mail_from:
+        mail_from = user
+    return host, user, password, mail_from, port, use_tls
 
 
 ORDER_STATUS_LABELS = {
@@ -143,21 +188,31 @@ def build_order_plain(order: Any, *, intro: str) -> str:
     return "\n".join(lines)
 
 
-def send_order_email(order: Any, *, kind: str = "created") -> None:
+def smtp_ready() -> bool:
+    host, user, password, mail_from, _, _ = resolve_sender()
+    return bool(host and user and mail_from and password)
+
+
+def send_order_email(order: Any, *, kind: str = "created") -> bool:
     to_addr = (order.customer_email or "").strip()
     if not to_addr:
-        return
+        logger.warning("[email] order #%s: no customer_email — letter skipped", order.id)
+        return False
 
-    host = os.getenv("SMTP_HOST", "").strip()
+    host, user, password, mail_from, port, use_tls = resolve_sender()
     if not host:
-        return
+        logger.warning("[email] order #%s: SMTP_HOST not set", order.id)
+        return False
+    if not user or "@" not in user:
+        logger.error("[email] order #%s: SMTP_USER / SMTP_FROM not set", order.id)
+        return False
+    if not password:
+        logger.error("[email] order #%s: SMTP_PASSWORD not set", order.id)
+        return False
+    if not mail_from or "@" not in mail_from:
+        mail_from = user
 
-    port = int(os.getenv("SMTP_PORT", "587"))
-    user = os.getenv("SMTP_USER", "").strip()
-    password = os.getenv("SMTP_PASSWORD", "")
-    mail_from = parse_smtp_address(os.getenv("SMTP_FROM", ""), user) or user
-    use_tls = os.getenv("SMTP_USE_TLS", "true").lower() in ("1", "true", "yes")
-    display_name = os.getenv("SMTP_FROM_NAME", "Кафе Адам").strip()
+    display_name = normalize_display_name(_env("SMTP_FROM_NAME", "Кафе «Адам»"))
 
     if kind == "status":
         status_label = ORDER_STATUS_LABELS.get(order.status, order.status)
@@ -183,26 +238,34 @@ def send_order_email(order: Any, *, kind: str = "created") -> None:
     html_body = build_order_html(order, headline=headline, intro_html=intro_html)
     plain_body = build_order_plain(order, intro=intro_plain)
 
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = str(Header(subject, "utf-8"))
-    msg["From"] = formataddr((str(Header(display_name, "utf-8")), mail_from))
+    # formataddr сам кодирует кириллицу в RFC 2047; не оборачивать в Header дважды
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = formataddr((display_name, mail_from))
     msg["To"] = to_addr
-
-    msg.attach(MIMEText(plain_body, "plain", "utf-8"))
-    msg.attach(MIMEText(html_body, "html", "utf-8"))
+    msg.set_content(plain_body, subtype="plain", charset="utf-8")
+    msg.add_alternative(html_body, subtype="html", charset="utf-8")
 
     context = ssl.create_default_context()
     try:
         if use_tls:
             with smtplib.SMTP(host, port, timeout=30) as server:
+                server.ehlo()
                 server.starttls(context=context)
-                if user:
-                    server.login(user, password)
-                server.sendmail(mail_from, [to_addr], msg.as_string())
+                server.ehlo()
+                server.login(user, password)
+                refused = server.send_message(msg, from_addr=mail_from, to_addrs=[to_addr])
         else:
             with smtplib.SMTP_SSL(host, port, timeout=30, context=context) as server:
-                if user:
-                    server.login(user, password)
-                server.sendmail(mail_from, [to_addr], msg.as_string())
+                server.login(user, password)
+                refused = server.send_message(msg, from_addr=mail_from, to_addrs=[to_addr])
+
+        if refused:
+            logger.error("[email] order #%s SMTP refused: %s", order.id, refused)
+            return False
+
+        logger.info("[email] order #%s sent (%s) -> %s", order.id, kind, to_addr)
+        return True
     except Exception as exc:
-        print(f"[email] failed order {order.id} ({kind}): {exc}")
+        logger.exception("[email] order #%s (%s) failed: %s", order.id, kind, exc)
+        return False

@@ -31,5 +31,9 @@ order = SimpleNamespace(
     loyalty_points_spent=0,
     items=[item],
 )
-send_order_email(order, kind="created")
-print(f"send_order_email OK -> {to}")
+ok = send_order_email(order, kind="created")
+if ok:
+    print(f"send_order_email OK -> {to}")
+else:
+    print(f"send_order_email FAILED -> {to}")
+    sys.exit(1)

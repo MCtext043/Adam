@@ -97,8 +97,8 @@ def main() -> int:
                     "plain",
                     "utf-8",
                 )
-                msg["Subject"] = str(Header("Тест SMTP — Кафе Адам", "utf-8"))
-                msg["From"] = formataddr((str(Header(from_name, "utf-8")), mail_from))
+                msg["Subject"] = Header("Тест SMTP — Кафе «Адам»", "utf-8")
+                msg["From"] = formataddr((from_name, mail_from))
                 msg["To"] = to_addr
                 server.sendmail(mail_from, [to_addr], msg.as_string())
                 print(f"  SEND: OK -> {to_addr}")

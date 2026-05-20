@@ -27,7 +27,7 @@ if (page === "login") {
         const err = await response.json().catch(() => ({}));
         throw new Error(err.detail || "Не удалось войти");
       }
-      window.location.href = "/account";
+      window.location.href = "/";
     } catch (error) {
       setAuthMessage(msg, error.message, "error");
     }

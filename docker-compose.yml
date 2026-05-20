@@ -34,6 +34,13 @@ services:
       DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/adam_delivery}
       WEB_CONCURRENCY: ${WEB_CONCURRENCY:-2}
       GUNICORN_TIMEOUT: ${GUNICORN_TIMEOUT:-120}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USE_TLS: ${SMTP_USE_TLS:-true}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Кафе Адам}
     depends_on:
       postgres:
         condition: service_healthy
