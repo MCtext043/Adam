@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}О кафе | Кафе Адам{% endblock %}
+{% block page %}about{% endblock %}
+{% block content %}
+<main class="page-main about-page">
+  <header class="section-heading section-heading-tight">
+    <p class="eyebrow">Наша история</p>
+    <h1>Кафе «Адам»</h1>
+    <p class="auth-sub">Тепло огня, вкус Кавказа и гостеприимство села Октябрьский.</p>
+  </header>
+
+  <section class="about-hero-card">
+    <img
+      class="about-hero-img"
+      src="https://avatars.mds.yandex.net/get-altay/4581272/2a00000179d7c643dfef942022d32e23c80c/XXL_height"
+      alt="Интерьер кафе Адам"
+      loading="eager"
+      width="1200"
+      height="700"
+    >
+  </section>
+
+  <section class="about-story">
+    <h2>Легенда «Адама»</h2>
+    <p>
+      Говорят, в горах жил мастер Адам — человек, который умел разжигать огонь так,
+      что дым пах лесом и специями, а мясо на вертеле таило во рту ещё до первого укуса.
+      Он кормил путников у дороги: хлеб из тандыра, сыр сулугуни, шашлык и чай с чабрецом.
+      Никто не уходил голодным.
+    </p>
+    <p>
+      Однажды к нему пришли гости из далёкого села и попросили: «Научи нас кормить людей
+      так же, как кормишь ты». Адам улыбнулся: «Секрет не в рецепте. Секрет — в том, чтобы
+      готовить для своих, как для семьи». С тех пор в Октябрьском зажигают мангал на рассвете,
+      пекут лаваш к обеду, а вечером собирают большие столы — с салатами, сетами и смехом.
+    </p>
+    <p>
+      Сегодня кафе «Адам» — это та же дорога-доброта: огонь, свежие продукты, щедрые порции
+      и домашняя атмосфера. Мы рады гостям в зале и привезём любимые блюда к вам домой.
+    </p>
+  </section>
+
+  <section class="about-gallery">
+    <h2>Наше пространство</h2>
+    <div class="about-gallery-grid">
+      <figure class="about-photo">
+        <img
+          src="https://avatars.mds.yandex.net/get-altay/10647561/2a0000018c5e80bc2949aad8e044a9809fcc/XXL_height"
+          alt="Блюда кафе Адам"
+          loading="lazy"
+        >
+        <figcaption>Блюда с мангала и свежая выпечка</figcaption>
+      </figure>
+      <figure class="about-photo">
+        <img
+          src="https://avatars.mds.yandex.net/get-altay/998237/2a0000018741757defbf85e38177a53877d9/XXL_height"
+          alt="Зал кафе Адам"
+          loading="lazy"
+        >
+        <figcaption>Уютный зал для семьи и друзей</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="about-cta">
+    <a class="button button-dark" href="/#menu">Заказать доставку</a>
+    <a class="button button-ghost" href="{{ yandex_map_org_url }}" target="_blank" rel="noopener noreferrer">Как добраться</a>
+  </section>
+</main>
+{% endblock %}

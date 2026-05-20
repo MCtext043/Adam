@@ -25,6 +25,18 @@
   </header>
 
   <main class="admin-main">
+    <section class="admin-settings-panel">
+      <h2>Настройки доставки</h2>
+      <form class="admin-settings-form" id="adminSettingsForm">
+        <label>
+          Минимальная сумма заказа, ₽
+          <input type="number" id="minOrderAmount" name="min_order_amount" min="0" step="50" required>
+        </label>
+        <button class="button button-dark" type="submit">Сохранить</button>
+        <p class="form-message" id="settingsMessage" hidden></p>
+      </form>
+    </section>
+
     <section class="admin-toolbar">
       <p>Здесь кухня видит, что нужно приготовить, телефон клиента и адрес доставки.</p>
       <button class="button button-dark" id="refreshOrders" type="button">Обновить</button>

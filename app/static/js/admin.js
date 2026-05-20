@@ -1,5 +1,8 @@
 const ordersEl = document.querySelector("#orders");
 const refreshBtn = document.querySelector("#refreshOrders");
+const settingsForm = document.querySelector("#adminSettingsForm");
+const minOrderAmountInput = document.querySelector("#minOrderAmount");
+const settingsMessage = document.querySelector("#settingsMessage");
 
 const statusLabels = {
   new: "Новый",
@@ -25,8 +28,12 @@ function renderOrders(orders) {
   }
 
   ordersEl.innerHTML = orders
-    .map(
-      (order) => `
+    .map((order) => {
+      const bonusLine =
+        order.loyalty_points_spent > 0
+          ? `<p><strong>Бонусы:</strong> списано ${order.loyalty_points_spent}</p>`
+          : "";
+      return `
         <article class="order-card">
           <div class="order-meta">
             <h3>Заказ #${order.id}</h3>
@@ -36,6 +43,7 @@ function renderOrders(orders) {
           ${order.customer_email ? `<p><strong>Email:</strong> ${order.customer_email}</p>` : ""}
           <p class="order-address"><strong>Адрес:</strong> ${order.address}</p>
           ${order.comment ? `<p><strong>Комментарий:</strong> ${order.comment}</p>` : ""}
+          ${bonusLine}
           <div class="order-lines">
             ${order.items
               .map(
@@ -59,8 +67,8 @@ function renderOrders(orders) {
             </select>
           </label>
         </article>
-      `,
-    )
+      `;
+    })
     .join("");
 }
 
@@ -73,6 +81,52 @@ async function loadOrders() {
   }
   const orders = await response.json();
   renderOrders(orders);
+}
+
+async function loadSettings() {
+  if (!minOrderAmountInput) return;
+  const response = await fetch("/api/admin/settings", { credentials: "same-origin" });
+  if (response.status === 401) {
+    window.location.href = "/admin/login";
+    return;
+  }
+  if (!response.ok) return;
+  const data = await response.json();
+  minOrderAmountInput.value = String(Math.round(data.min_order_amount));
+}
+
+function showSettingsMessage(text, type) {
+  if (!settingsMessage) return;
+  settingsMessage.hidden = false;
+  settingsMessage.textContent = text;
+  settingsMessage.className = `form-message ${type}`;
+}
+
+async function saveSettings(event) {
+  event.preventDefault();
+  if (!minOrderAmountInput) return;
+
+  const value = Number(minOrderAmountInput.value);
+  const response = await fetch("/api/admin/settings", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
+    body: JSON.stringify({ min_order_amount: value }),
+  });
+
+  if (response.status === 401) {
+    window.location.href = "/admin/login";
+    return;
+  }
+
+  if (!response.ok) {
+    showSettingsMessage("Не удалось сохранить настройки", "error");
+    return;
+  }
+
+  const data = await response.json();
+  minOrderAmountInput.value = String(Math.round(data.min_order_amount));
+  showSettingsMessage("Сохранено", "success");
 }
 
 async function updateStatus(orderId, status) {
@@ -102,7 +156,8 @@ ordersEl.addEventListener("change", (event) => {
 });
 
 refreshBtn.addEventListener("click", loadOrders);
+settingsForm?.addEventListener("submit", saveSettings);
 
-loadOrders().catch(() => {
+Promise.all([loadSettings(), loadOrders()]).catch(() => {
   ordersEl.innerHTML = `<article class="order-card"><h3>Ошибка загрузки</h3><p>Проверьте сервер и подключение к PostgreSQL.</p></article>`;
 });

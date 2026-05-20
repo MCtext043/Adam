@@ -48,8 +48,10 @@ async function hydrateAuthNav() {
     if (!response.ok) return;
     const data = await response.json();
     if (data.authenticated) {
+      const label = (data.name || data.email || "Профиль").replace(/</g, "");
       slot.innerHTML =
-        '<a class="nav-btn" href="/account">Кабинет</a><button type="button" class="nav-btn nav-btn-outline" id="logoutNavBtn">Выйти</button>';
+        `<a class="nav-btn" href="/account" title="Личный кабинет">${label}</a>` +
+        '<button type="button" class="nav-btn nav-btn-outline" id="logoutNavBtn">Выйти</button>';
       document.getElementById("logoutNavBtn")?.addEventListener("click", async () => {
         await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
         window.location.reload();

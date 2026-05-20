@@ -1,19 +1,18 @@
 import os
 import secrets
-import smtplib
-import ssl
 from contextlib import contextmanager
 from datetime import datetime
 from decimal import Decimal
-from email.message import EmailMessage
 from typing import Annotated, Generator
+
+from app.email_service import send_order_email
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from passlib.context import CryptContext
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, Text, create_engine, func, select, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship, selectinload, sessionmaker
 from starlette.middleware.sessions import SessionMiddleware
@@ -93,12 +92,20 @@ class Order(Base):
     total: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     customer_id: Mapped[int | None] = mapped_column(ForeignKey("customers.id"), nullable=True)
     loyalty_points_earned: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    loyalty_points_spent: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     items: Mapped[list["OrderItem"]] = relationship(
         back_populates="order",
         cascade="all, delete-orphan",
     )
     customer: Mapped[Customer | None] = relationship(back_populates="orders")
+
+
+class AppSettings(Base):
+    __tablename__ = "app_settings"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    min_order_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, default=Decimal("500.00"))
 
 
 class OrderItem(Base):
@@ -127,10 +134,24 @@ class OrderCreate(BaseModel):
     address: str = Field(min_length=8, max_length=500)
     comment: str = Field(default="", max_length=500)
     items: list[CartItemIn] = Field(min_length=1)
+    loyalty_points_to_spend: int = Field(default=0, ge=0, le=100_000)
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def empty_email_to_none(cls, value: object) -> object:
+        if value is None:
+            return None
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
 
 
 class OrderStatusUpdate(BaseModel):
     status: str
+
+
+class AdminSettingsUpdate(BaseModel):
+    min_order_amount: float = Field(ge=0, le=1_000_000)
 
 
 class RegisterIn(BaseModel):
@@ -168,6 +189,8 @@ def migrate_schema() -> None:
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_email VARCHAR(320) NOT NULL DEFAULT ''",
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_id INTEGER",
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS loyalty_points_earned INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS loyalty_points_spent INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE customers ADD COLUMN IF NOT EXISTS loyalty_points INTEGER NOT NULL DEFAULT 0",
         "ALTER TABLE products ALTER COLUMN image_url TYPE VARCHAR(500)",
     ]
     with engine.begin() as conn:
@@ -199,6 +222,7 @@ def on_startup() -> None:
     Base.metadata.create_all(bind=engine)
     migrate_schema()
     seed_products()
+    seed_app_settings()
 
 
 def gallery_photo_urls() -> list[str]:
@@ -316,6 +340,21 @@ def seed_products() -> None:
         session.add_all([Product(**item) for item in menu_items if item["name"] not in existing_names])
 
 
+def seed_app_settings() -> None:
+    with startup_session() as session:
+        if session.get(AppSettings, 1) is None:
+            session.add(AppSettings(id=1, min_order_amount=Decimal("500.00")))
+
+
+def get_app_settings(db: Session) -> AppSettings:
+    settings = db.get(AppSettings, 1)
+    if settings is None:
+        settings = AppSettings(id=1, min_order_amount=Decimal("500.00"))
+        db.add(settings)
+        db.flush()
+    return settings
+
+
 def normalize_phone(phone: str) -> str:
     return "".join(char for char in phone.strip() if char.isdigit() or char == "+")
 
@@ -337,59 +376,14 @@ def loyalty_points_for_total(total: Decimal) -> int:
     return max(1, int(total * Decimal("0.03")))
 
 
-def send_order_confirmation_email(to_addr: str, order: Order) -> None:
-    host = os.getenv("SMTP_HOST", "").strip()
-    if not host or not to_addr.strip():
-        return
-    port = int(os.getenv("SMTP_PORT", "587"))
-    user = os.getenv("SMTP_USER", "").strip()
-    password = os.getenv("SMTP_PASSWORD", "")
-    mail_from = os.getenv("SMTP_FROM", user).strip()
-    use_tls = os.getenv("SMTP_USE_TLS", "true").lower() in ("1", "true", "yes")
-
-    lines = [
-        f"Здравствуйте, {order.customer_name}!",
-        "",
-        f"Заказ №{order.id} принят. Статус: {order.status}.",
-        f"Сумма: {order.total} ₽.",
-        "",
-        "Состав заказа:",
-    ]
-    for item in order.items:
-        lines.append(f"— {item.product_name} × {item.quantity} = {item.price * item.quantity} ₽")
-    lines.extend(["", f"Телефон: {order.phone}", f"Адрес: {order.address}", "", "Спасибо, что выбрали кафе «Адам»!"])
-
-    msg = EmailMessage()
-    msg["Subject"] = f"Заказ №{order.id} — кафе «Адам»"
-    msg["From"] = mail_from
-    msg["To"] = to_addr.strip()
-    msg.set_content("\n".join(lines))
-
-    context = ssl.create_default_context()
-    try:
-        if use_tls:
-            with smtplib.SMTP(host, port, timeout=30) as server:
-                server.starttls(context=context)
-                if user:
-                    server.login(user, password)
-                server.send_message(msg)
-        else:
-            with smtplib.SMTP_SSL(host, port, timeout=30, context=context) as server:
-                if user:
-                    server.login(user, password)
-                server.send_message(msg)
-    except OSError as exc:
-        print(f"[email] failed to send order {order.id}: {exc}")
-
-
 @app.get("/", response_class=HTMLResponse)
 def storefront_home(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(request, "index.html", {})
 
 
-@app.get("/menu", response_class=HTMLResponse)
-def storefront_menu(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse(request, "menu.html", {})
+@app.get("/menu")
+def storefront_menu() -> RedirectResponse:
+    return RedirectResponse(url="/#menu", status_code=302)
 
 
 @app.get("/cart", response_class=HTMLResponse)
@@ -415,6 +409,17 @@ def page_register(request: Request) -> HTMLResponse:
 @app.get("/account", response_class=HTMLResponse)
 def page_account(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(request, "account.html", {})
+
+
+@app.get("/about", response_class=HTMLResponse)
+def page_about(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse(request, "about.html", {})
+
+
+@app.get("/api/store/settings")
+def store_settings(db: Db) -> dict:
+    settings = get_app_settings(db)
+    return {"min_order_amount": float(settings.min_order_amount)}
 
 
 @app.get("/admin/login", response_model=None)
@@ -452,6 +457,23 @@ def admin_panel(request: Request) -> HTMLResponse | RedirectResponse:
     if not request.session.get("admin"):
         return RedirectResponse(url="/admin/login", status_code=302)
     return templates.TemplateResponse(request, "admin.html", {"statuses": ORDER_STATUSES})
+
+
+@app.get("/api/admin/settings")
+def admin_get_settings(request: Request, db: Db) -> dict:
+    require_admin(request)
+    settings = get_app_settings(db)
+    return {"min_order_amount": float(settings.min_order_amount)}
+
+
+@app.patch("/api/admin/settings")
+def admin_update_settings(payload: AdminSettingsUpdate, request: Request, db: Db) -> dict:
+    require_admin(request)
+    settings = get_app_settings(db)
+    settings.min_order_amount = Decimal(str(payload.min_order_amount))
+    db.commit()
+    db.refresh(settings)
+    return {"min_order_amount": float(settings.min_order_amount)}
 
 
 @app.get("/api/products")
@@ -562,9 +584,31 @@ def create_order(payload: OrderCreate, request: Request, db: Db) -> dict:
     elif customer is not None:
         email_for_order = customer.email
 
+    settings = get_app_settings(db)
+    min_order = settings.min_order_amount
+    if total < min_order:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Минимальная сумма заказа для доставки — {int(min_order)} ₽. Сейчас в корзине {int(total)} ₽.",
+        )
+
+    points_to_spend = payload.loyalty_points_to_spend
+    if points_to_spend > 0:
+        if customer is None:
+            raise HTTPException(status_code=400, detail="Войдите в аккаунт, чтобы списать бонусы")
+        if points_to_spend > customer.loyalty_points:
+            raise HTTPException(status_code=400, detail="Недостаточно бонусов на счёте")
+        max_discount = int(total)
+        if points_to_spend > max_discount:
+            points_to_spend = max_discount
+
+    final_total = total - Decimal(points_to_spend)
+    if final_total < 0:
+        final_total = Decimal("0.00")
+
     loyalty_earned = 0
     if customer is not None:
-        loyalty_earned = loyalty_points_for_total(total)
+        loyalty_earned = loyalty_points_for_total(final_total)
 
     order = Order(
         customer_name=payload.customer_name.strip(),
@@ -572,26 +616,36 @@ def create_order(payload: OrderCreate, request: Request, db: Db) -> dict:
         customer_email=email_for_order,
         address=payload.address.strip(),
         comment=payload.comment.strip(),
-        total=total,
+        total=final_total,
         items=order_items,
         customer_id=customer.id if customer else None,
         loyalty_points_earned=loyalty_earned,
+        loyalty_points_spent=points_to_spend,
     )
     db.add(order)
     db.commit()
     db.refresh(order)
 
-    if customer is not None and loyalty_earned > 0:
-        customer.loyalty_points += loyalty_earned
+    if customer is not None:
+        if points_to_spend > 0:
+            customer.loyalty_points -= points_to_spend
+        if loyalty_earned > 0:
+            customer.loyalty_points += loyalty_earned
         db.commit()
 
-    send_order_confirmation_email(email_for_order, order)
+    order = db.scalars(select(Order).options(selectinload(Order.items)).where(Order.id == order.id)).one()
+    try:
+        send_order_email(order, kind="created")
+    except Exception as exc:
+        print(f"[order] email after create failed for #{order.id}: {exc}")
 
     return {
         "id": order.id,
         "status": order.status,
         "total": float(order.total),
+        "subtotal": float(total),
         "loyalty_points_earned": loyalty_earned,
+        "loyalty_points_spent": points_to_spend,
     }
 
 
@@ -623,7 +677,10 @@ def update_order_status(order_id: int, payload: OrderStatusUpdate, request: Requ
 
     order.status = payload.status
     db.commit()
-    db.refresh(order)
+    order = db.scalars(
+        select(Order).options(selectinload(Order.items)).where(Order.id == order_id)
+    ).one()
+    send_order_email(order, kind="status")
     return serialize_order(order)
 
 
@@ -637,6 +694,8 @@ def serialize_order(order: Order) -> dict:
         "comment": order.comment,
         "status": order.status,
         "total": float(order.total),
+        "loyalty_points_spent": order.loyalty_points_spent,
+        "loyalty_points_earned": order.loyalty_points_earned,
         "created_at": str(order.created_at),
         "items": [
             {

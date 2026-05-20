@@ -8,23 +8,37 @@
       <h1>Доставка блюд кафе «Адам»</h1>
       <p>Горячие блюда, сеты, выпечка, салаты и напитки — доставим к вам домой.</p>
       <div class="hero-actions">
-        <a class="button button-dark" href="/menu">Выбрать блюда</a>
-        <a class="button button-light" href="/cart">Перейти в корзину</a>
+        <a class="button button-dark" href="#menu">Выбрать блюда</a>
+        <a class="button button-light" href="/cart">Корзина</a>
       </div>
     </section>
   </div>
 </section>
 
-<main class="page-main home-main">
-  <section class="home-featured">
-    <div class="home-featured-head">
-      <div>
-        <p class="eyebrow">Популярное</p>
-        <h2>Выберите к столу</h2>
-      </div>
-      <a class="button button-dark home-menu-btn" href="/menu">Перейти к меню</a>
+<main class="page-main home-main" id="menu">
+  <header class="section-heading section-heading-tight home-menu-heading">
+    <p class="eyebrow">Меню доставки</p>
+    <h2>Блюда</h2>
+    <p class="min-order-hint" id="minOrderHint"></p>
+  </header>
+
+  <section class="layout layout-single">
+    <div class="menu-column">
+      <section class="menu-controls" aria-label="Поиск и категории">
+        <label class="search-field">
+          Поиск
+          <input id="menuSearch" type="search" placeholder="Шашлык, салат…" autocomplete="off">
+        </label>
+        <div class="filter-block">
+          <span class="filter-label">Категории</span>
+          <div class="category-filters-shell">
+            <div class="category-filters" id="categoryFilters"></div>
+          </div>
+        </div>
+        <button class="button button-ghost button-sm menu-reset-btn" id="resetFilters" type="button">Сбросить</button>
+      </section>
+      <div class="catalog" id="products"></div>
     </div>
-    <div class="home-featured-grid" id="homeFeaturedProducts"></div>
   </section>
 </main>
 {% endblock %}

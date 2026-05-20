@@ -17,6 +17,8 @@ $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 $stamp = Get-Date -Format "yyyyMMddHHmmss"
 $archive = Join-Path $env:TEMP "adam-deploy-$stamp.tar.gz"
 $smtpEnv = Join-Path $env:TEMP "adam-smtp-$stamp.env"
+$remoteSh = Join-Path $env:TEMP "adam-remote-$stamp.sh"
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 
 Write-Host "Preparing deploy package from $repoRoot"
 Push-Location $repoRoot
@@ -31,7 +33,8 @@ try {
         "SMTP_USE_TLS",
         "SMTP_USER",
         "SMTP_PASSWORD",
-        "SMTP_FROM"
+        "SMTP_FROM",
+        "SMTP_FROM_NAME"
     )
     $optionalKeys = @(
         "SESSION_SECRET",
@@ -59,7 +62,6 @@ try {
     }
 
     # Docker Compose expects env files without BOM and with Unix line endings.
-    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
     [System.IO.File]::WriteAllText($smtpEnv, (($envLines -join "`n") + "`n"), $utf8NoBom)
 
     tar -czf $archive `
@@ -82,13 +84,13 @@ Assert-LastExitCode "Upload archive"
 scp $smtpEnv "${User}@${Server}:/tmp/adam-smtp.env"
 Assert-LastExitCode "Upload env"
 
-$remoteScript = @'
-set -euo pipefail
-mkdir -p /opt/adam-delivery
-cd /opt/adam-delivery
+$remoteScript = @"
+set -eu
+mkdir -p $RemoteDir
+cd $RemoteDir
 
 if [ -f .env ]; then
-  cp .env ".env.backup.$(date +%Y%m%d%H%M%S)"
+  cp .env ".env.backup.`$(date +%Y%m%d%H%M%S)"
 else
   touch .env
 fi
@@ -96,24 +98,24 @@ fi
 # Normalize old Windows/BOM env content left from previous deploy attempts.
 sed -i 's/\xEF\xBB\xBF//g; s/\r$//' .env
 
-# Remove app-level values that are refreshed from the local .env, keep server DB/port values.
-for key in SMTP_HOST SMTP_PORT SMTP_USE_TLS SMTP_USER SMTP_PASSWORD SMTP_FROM SESSION_SECRET ADMIN_USERNAME ADMIN_PASSWORD; do
-  sed -i "/^${key}=/d" .env
+# Remove app-level values refreshed from local .env; keep server DB/port values.
+for key in SMTP_HOST SMTP_PORT SMTP_USE_TLS SMTP_USER SMTP_PASSWORD SMTP_FROM SMTP_FROM_NAME SESSION_SECRET ADMIN_USERNAME ADMIN_PASSWORD; do
+  sed -i "/^`${key}=/d" .env
 done
 
 cat /tmp/adam-smtp.env >> .env
 sed -i 's/\xEF\xBB\xBF//g; s/\r$//' .env
-tar -xzf /tmp/adam-deploy.tar.gz -C /opt/adam-delivery
+tar -xzf /tmp/adam-deploy.tar.gz -C $RemoteDir
 
 docker compose --profile app up -d --build
 docker compose ps
 
 echo "Waiting for app health..."
-for i in $(seq 1 30); do
-  if curl -fsS "http://127.0.0.1:${APP_PORT:-8010}/health"; then
+for i in `$(seq 1 30); do
+  if curl -fsS "http://127.0.0.1:`${APP_PORT:-8010}/health"; then
     echo
     echo "Health check passed."
-    rm -f /tmp/adam-deploy.tar.gz /tmp/adam-smtp.env
+    rm -f /tmp/adam-deploy.tar.gz /tmp/adam-smtp.env /tmp/adam-deploy-remote.sh
     exit 0
   fi
   sleep 2
@@ -122,11 +124,19 @@ done
 echo "Health check failed. Last app logs:"
 docker logs --tail=120 adam-web || true
 exit 1
-'@
+"@
+
+# PowerShell pipes CRLF to SSH and breaks bash (set: invalid option name pipefail).
+$remoteScriptUnix = ($remoteScript -replace "`r`n", "`n") -replace "`r", "`n"
+[System.IO.File]::WriteAllText($remoteSh, $remoteScriptUnix, $utf8NoBom)
+
+Write-Host "Uploading remote deploy script."
+scp $remoteSh "${User}@${Server}:/tmp/adam-deploy-remote.sh"
+Assert-LastExitCode "Upload remote script"
 
 Write-Host "Deploying on server. Enter SSH password when prompted."
-$remoteScript | ssh "${User}@${Server}" "bash -s"
+ssh "${User}@${Server}" "bash /tmp/adam-deploy-remote.sh"
 Assert-LastExitCode "Remote deploy"
 
-Remove-Item -Force $archive, $smtpEnv -ErrorAction SilentlyContinue
+Remove-Item -Force $archive, $smtpEnv, $remoteSh -ErrorAction SilentlyContinue
 Write-Host "Deploy complete."

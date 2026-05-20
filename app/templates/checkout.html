@@ -6,25 +6,47 @@
   <header class="section-heading section-heading-tight">
     <p class="eyebrow">Доставка</p>
     <h1>Оформление заказа</h1>
+    <p class="min-order-hint" id="checkoutMinOrderHint"></p>
   </header>
 
   <div class="checkout-grid">
     <aside class="checkout-summary cart-panel" aria-label="Состав заказа">
       <p class="eyebrow">В корзине</p>
       <div class="cart-list" id="checkoutCartItems"></div>
-      <div class="cart-total">
-        <span>Итого</span>
-        <strong id="checkoutCartTotal">0 ₽</strong>
+      <div class="checkout-totals">
+        <div class="cart-total checkout-line">
+          <span>Сумма блюд</span>
+          <strong id="checkoutSubtotal">0 ₽</strong>
+        </div>
+        <div class="cart-total checkout-line checkout-discount-line" id="discountLine" hidden>
+          <span>Бонусы</span>
+          <strong id="checkoutDiscount">−0 ₽</strong>
+        </div>
+        <div class="cart-total">
+          <span>К оплате</span>
+          <strong id="checkoutCartTotal">0 ₽</strong>
+        </div>
       </div>
       <p class="bonus-preview" id="bonusPreview"></p>
       <div class="checkout-edit-row">
         <a class="button button-ghost button-sm" href="/cart">Корзина</a>
-        <a class="button button-ghost button-sm" href="/menu">Меню</a>
+        <a class="button button-ghost button-sm" href="/#menu">К блюдам</a>
       </div>
     </aside>
 
     <section class="checkout-form-wrap">
       <div class="account-banner" id="accountBanner" hidden></div>
+      <div class="loyalty-spend-panel" id="loyaltySpendPanel" hidden>
+        <label class="loyalty-spend-label">
+          <input type="checkbox" id="useLoyaltyPoints">
+          Списать бонусы (1 бонус = 1 ₽)
+        </label>
+        <label class="loyalty-spend-amount-label" id="loyaltyAmountWrap" hidden>
+          Сколько списать
+          <input type="number" id="loyaltyPointsInput" min="0" step="1" value="0">
+          <span class="field-hint" id="loyaltyAvailableHint"></span>
+        </label>
+      </div>
       <form class="order-form" id="orderForm">
         <label>
           Имя
