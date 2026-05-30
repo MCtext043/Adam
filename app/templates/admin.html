@@ -16,7 +16,7 @@
     </a>
     <div>
       <p class="eyebrow">Админ-панель</p>
-      <h1>Текущие заказы</h1>
+      <h1 id="adminPageTitle">Текущие заказы</h1>
     </div>
     <div class="admin-header-actions">
       <a class="button button-light" href="/">На сайт</a>
@@ -37,16 +37,31 @@
       </form>
     </section>
 
-    <section class="admin-toolbar">
-      <p>Здесь кухня видит, что нужно приготовить, телефон клиента и адрес доставки.</p>
-      <button class="button button-dark" id="refreshOrders" type="button">Обновить</button>
+    <nav class="admin-tabs" aria-label="Разделы заказов">
+      <button type="button" class="admin-tab is-active" data-admin-tab="today">Сегодня</button>
+      <button type="button" class="admin-tab" data-admin-tab="archive">Архив</button>
+    </nav>
+
+    <section class="admin-orders-section" id="adminSectionToday">
+      <div class="admin-toolbar">
+        <p>Заказы за сегодня — кухня видит состав, телефон и адрес доставки.</p>
+        <button class="button button-dark" id="refreshOrders" type="button">Обновить</button>
+      </div>
+      <section class="orders-grid" id="orders"></section>
     </section>
-    <section class="orders-grid" id="orders"></section>
+
+    <section class="admin-orders-section" id="adminSectionArchive" hidden>
+      <div class="admin-toolbar">
+        <p>Заказы за прошлые дни (не сегодня). Статус можно изменить при необходимости.</p>
+        <button class="button button-dark" id="refreshArchive" type="button">Обновить</button>
+      </div>
+      <section class="orders-grid" id="ordersArchive"></section>
+    </section>
   </main>
 
   <script>
     window.ORDER_STATUSES = {{ statuses | tojson }};
   </script>
-  <script src="/static/js/admin.js"></script>
+  <script src="/static/js/admin.js?v=2"></script>
 </body>
 </html>

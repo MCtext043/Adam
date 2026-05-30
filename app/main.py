@@ -2,7 +2,8 @@ import json
 import os
 import secrets
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 from decimal import Decimal
 from pathlib import Path
 from typing import Annotated, Generator
@@ -859,19 +860,48 @@ async def elplat_payment_callback(request: Request, order_id: int, db: Db) -> di
     return {"status": True}
 
 
+def _app_timezone() -> ZoneInfo:
+    try:
+        return ZoneInfo(os.getenv("APP_TIMEZONE", "Europe/Moscow"))
+    except Exception:
+        return ZoneInfo("UTC")
+
+
+def _today_range() -> tuple[datetime, datetime]:
+    tz = _app_timezone()
+    now = datetime.now(tz)
+    start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    return start, start + timedelta(days=1)
+
+
+def _fetch_admin_orders(
+    db: Session,
+    *,
+    today_only: bool,
+    exclude_done: bool = False,
+) -> list[Order]:
+    start, end = _today_range()
+    stmt = select(Order).options(selectinload(Order.items))
+    if today_only:
+        stmt = stmt.where(Order.created_at >= start, Order.created_at < end)
+        if exclude_done:
+            stmt = stmt.where(Order.status != "done")
+    else:
+        stmt = stmt.where(Order.created_at < start)
+    return db.scalars(stmt.order_by(Order.id.desc())).unique().all()
+
+
 @app.get("/api/admin/orders")
 def list_orders(request: Request, db: Db) -> list[dict]:
     require_admin(request)
-    orders = (
-        db.scalars(
-            select(Order)
-            .options(selectinload(Order.items))
-            .where(Order.status != "done")
-            .order_by(Order.id.desc())
-        )
-        .unique()
-        .all()
-    )
+    orders = _fetch_admin_orders(db, today_only=True, exclude_done=True)
+    return [serialize_order(order) for order in orders]
+
+
+@app.get("/api/admin/orders/archive")
+def list_orders_archive(request: Request, db: Db) -> list[dict]:
+    require_admin(request)
+    orders = _fetch_admin_orders(db, today_only=False)
     return [serialize_order(order) for order in orders]
 
 

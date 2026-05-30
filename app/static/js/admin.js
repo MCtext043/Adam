@@ -1,8 +1,17 @@
 const ordersEl = document.querySelector("#orders");
+const archiveOrdersEl = document.querySelector("#ordersArchive");
 const refreshBtn = document.querySelector("#refreshOrders");
+const refreshArchiveBtn = document.querySelector("#refreshArchive");
 const settingsForm = document.querySelector("#adminSettingsForm");
 const minOrderAmountInput = document.querySelector("#minOrderAmount");
 const settingsMessage = document.querySelector("#settingsMessage");
+const adminPageTitle = document.querySelector("#adminPageTitle");
+const sectionToday = document.querySelector("#adminSectionToday");
+const sectionArchive = document.querySelector("#adminSectionArchive");
+const tabButtons = document.querySelectorAll("[data-admin-tab]");
+
+let activeTab = "today";
+let archiveLoaded = false;
 
 const statusLabels = {
   pending_payment: "Ожидает оплату",
@@ -16,19 +25,34 @@ const statusLabels = {
 const formatPrice = (value) =>
   new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 0 }).format(value);
 
+function formatOrderDate(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 function statusOptions(currentStatus) {
   return window.ORDER_STATUSES.map(
     (status) => `<option value="${status}" ${status === currentStatus ? "selected" : ""}>${statusLabels[status]}</option>`,
   ).join("");
 }
 
-function renderOrders(orders) {
+function renderOrders(orders, container, { emptyTitle, emptyText, showDate = false }) {
+  if (!container) return;
+
   if (!orders.length) {
-    ordersEl.innerHTML = `<article class="order-card"><h3>Заказов пока нет</h3><p>Новые заказы появятся здесь сразу после оформления на сайте.</p></article>`;
+    container.innerHTML = `<article class="order-card"><h3>${emptyTitle}</h3><p>${emptyText}</p></article>`;
     return;
   }
 
-  ordersEl.innerHTML = orders
+  container.innerHTML = orders
     .map((order) => {
       const bonusLine =
         order.loyalty_points_spent > 0
@@ -38,12 +62,16 @@ function renderOrders(orders) {
         order.payment_status && order.payment_status !== "none"
           ? `<p><strong>Оплата:</strong> ${order.payment_status === "paid" ? "оплачен" : "ожидает"}</p>`
           : "";
+      const dateLine = showDate
+        ? `<p class="order-date"><strong>Дата:</strong> ${formatOrderDate(order.created_at)}</p>`
+        : "";
       return `
         <article class="order-card">
           <div class="order-meta">
             <h3>Заказ #${order.id}</h3>
             <span class="status-pill">${statusLabels[order.status] || order.status}</span>
           </div>
+          ${dateLine}
           ${payLine}
           <p><strong>${order.customer_name}</strong> · ${order.phone}</p>
           ${order.customer_email ? `<p><strong>Email:</strong> ${order.customer_email}</p>` : ""}
@@ -79,6 +107,7 @@ function renderOrders(orders) {
 }
 
 async function loadOrders() {
+  if (!ordersEl) return;
   ordersEl.innerHTML = `<article class="order-card"><p>Загрузка заказов...</p></article>`;
   const response = await fetch("/api/admin/orders", { credentials: "same-origin" });
   if (response.status === 401) {
@@ -86,7 +115,46 @@ async function loadOrders() {
     return;
   }
   const orders = await response.json();
-  renderOrders(orders);
+  renderOrders(orders, ordersEl, {
+    emptyTitle: "Заказов за сегодня нет",
+    emptyText: "Новые заказы появятся здесь сразу после оформления на сайте.",
+    showDate: false,
+  });
+}
+
+async function loadArchiveOrders() {
+  if (!archiveOrdersEl) return;
+  archiveOrdersEl.innerHTML = `<article class="order-card"><p>Загрузка архива...</p></article>`;
+  const response = await fetch("/api/admin/orders/archive", { credentials: "same-origin" });
+  if (response.status === 401) {
+    window.location.href = "/admin/login";
+    return;
+  }
+  const orders = await response.json();
+  archiveLoaded = true;
+  renderOrders(orders, archiveOrdersEl, {
+    emptyTitle: "Архив пуст",
+    emptyText: "Здесь будут заказы за прошлые дни.",
+    showDate: true,
+  });
+}
+
+function setActiveTab(tab) {
+  activeTab = tab;
+  tabButtons.forEach((btn) => {
+    btn.classList.toggle("is-active", btn.dataset.adminTab === tab);
+  });
+
+  if (sectionToday) sectionToday.hidden = tab !== "today";
+  if (sectionArchive) sectionArchive.hidden = tab !== "archive";
+
+  if (adminPageTitle) {
+    adminPageTitle.textContent = tab === "archive" ? "Архив заказов" : "Текущие заказы";
+  }
+
+  if (tab === "archive" && !archiveLoaded) {
+    loadArchiveOrders();
+  }
 }
 
 async function loadSettings() {
@@ -150,20 +218,35 @@ async function updateStatus(orderId, status) {
 
   if (!response.ok) {
     alert("Не удалось обновить статус заказа");
+    return;
   }
 
-  await loadOrders();
+  if (activeTab === "archive") {
+    await loadArchiveOrders();
+  } else {
+    await loadOrders();
+  }
 }
 
-ordersEl.addEventListener("change", (event) => {
+function handleStatusChange(event) {
   const select = event.target.closest("[data-order-status]");
   if (!select) return;
   updateStatus(select.dataset.orderStatus, select.value);
-});
+}
 
-refreshBtn.addEventListener("click", loadOrders);
+ordersEl?.addEventListener("change", handleStatusChange);
+archiveOrdersEl?.addEventListener("change", handleStatusChange);
+
+refreshBtn?.addEventListener("click", loadOrders);
+refreshArchiveBtn?.addEventListener("click", loadArchiveOrders);
 settingsForm?.addEventListener("submit", saveSettings);
 
+tabButtons.forEach((btn) => {
+  btn.addEventListener("click", () => setActiveTab(btn.dataset.adminTab));
+});
+
 Promise.all([loadSettings(), loadOrders()]).catch(() => {
-  ordersEl.innerHTML = `<article class="order-card"><h3>Ошибка загрузки</h3><p>Проверьте сервер и подключение к PostgreSQL.</p></article>`;
+  if (ordersEl) {
+    ordersEl.innerHTML = `<article class="order-card"><h3>Ошибка загрузки</h3><p>Проверьте сервер и подключение к PostgreSQL.</p></article>`;
+  }
 });

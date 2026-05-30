@@ -1603,6 +1603,44 @@ main {
   width: 160px;
 }
 
+.admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.admin-tab {
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(32, 25, 21, 0.18);
+  background: #fff;
+  font-family: var(--font-sans, Arial, sans-serif);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.admin-tab:hover {
+  border-color: var(--black, #201915);
+}
+
+.admin-tab.is-active {
+  background: var(--black, #201915);
+  color: var(--white, #fff);
+  border-color: var(--black, #201915);
+}
+
+.admin-orders-section[hidden] {
+  display: none !important;
+}
+
+.order-date {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  opacity: 0.75;
+}
+
 /* --- SBP / Elplat payment page --- */
 .pay-body {
   min-height: 100vh;
