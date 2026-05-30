@@ -19,6 +19,8 @@ const bonusPreview = document.getElementById("bonusPreview");
 const orderEmail = document.getElementById("orderEmail");
 const minOrderHintEl = document.getElementById("minOrderHint");
 const checkoutMinOrderHintEl = document.getElementById("checkoutMinOrderHint");
+const checkoutPaymentHintEl = document.getElementById("checkoutPaymentHint");
+const orderSubmitBtn = document.getElementById("orderSubmitBtn");
 const loyaltySpendPanel = document.getElementById("loyaltySpendPanel");
 const useLoyaltyPoints = document.getElementById("useLoyaltyPoints");
 const loyaltyAmountWrap = document.getElementById("loyaltyAmountWrap");
@@ -31,7 +33,7 @@ let products = [];
 let cart = JSON.parse(localStorage.getItem("adamCart") || "{}");
 let activeCategory = "all";
 let searchQuery = "";
-let storeSettings = { min_order_amount: 500 };
+let storeSettings = { min_order_amount: 500, payment_enabled: false };
 let authUser = null;
 let loyaltySpendAmount = 0;
 
@@ -406,6 +408,12 @@ orderForm?.addEventListener("submit", async (event) => {
     }
 
     const order = await response.json();
+
+    if (order.payment_required && order.payment_url) {
+      window.location.href = order.payment_url;
+      return;
+    }
+
     cart = {};
     if (useLoyaltyPoints) useLoyaltyPoints.checked = false;
     if (loyaltyAmountWrap) loyaltyAmountWrap.hidden = true;
@@ -490,6 +498,10 @@ async function loadStoreSettings() {
     }
   } catch {
     /* defaults */
+  }
+  if (storeSettings.payment_enabled) {
+    checkoutPaymentHintEl?.removeAttribute("hidden");
+    if (orderSubmitBtn) orderSubmitBtn.textContent = "Оформить и оплатить";
   }
 }
 

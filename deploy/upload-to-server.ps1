@@ -39,7 +39,13 @@ try {
     $optionalKeys = @(
         "SESSION_SECRET",
         "ADMIN_USERNAME",
-        "ADMIN_PASSWORD"
+        "ADMIN_PASSWORD",
+        "PUBLIC_BASE_URL",
+        "ELPLAT_ENABLED",
+        "ELPLAT_API_URL",
+        "ELPLAT_LOGIN",
+        "ELPLAT_PASSWORD",
+        "ELPLAT_ORG_ID"
     )
 
     function Normalize-SmtpFrom([string]$Value, [string]$SmtpUser) {
@@ -116,6 +122,9 @@ try {
         if ($value -and ($value -notmatch "замените_")) {
             $envLines += "$key=$value"
         }
+    }
+    if ($envLines -notmatch "PUBLIC_BASE_URL=") {
+        $envLines += "PUBLIC_BASE_URL=http://kafeadam.ru"
     }
 
     # Docker Compose expects env files without BOM and with Unix line endings.

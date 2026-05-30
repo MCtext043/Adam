@@ -5,6 +5,7 @@ const minOrderAmountInput = document.querySelector("#minOrderAmount");
 const settingsMessage = document.querySelector("#settingsMessage");
 
 const statusLabels = {
+  pending_payment: "Ожидает оплату",
   new: "Новый",
   cooking: "Готовится",
   delivering: "В доставке",
@@ -33,12 +34,17 @@ function renderOrders(orders) {
         order.loyalty_points_spent > 0
           ? `<p><strong>Бонусы:</strong> списано ${order.loyalty_points_spent}</p>`
           : "";
+      const payLine =
+        order.payment_status && order.payment_status !== "none"
+          ? `<p><strong>Оплата:</strong> ${order.payment_status === "paid" ? "оплачен" : "ожидает"}</p>`
+          : "";
       return `
         <article class="order-card">
           <div class="order-meta">
             <h3>Заказ #${order.id}</h3>
             <span class="status-pill">${statusLabels[order.status] || order.status}</span>
           </div>
+          ${payLine}
           <p><strong>${order.customer_name}</strong> · ${order.phone}</p>
           ${order.customer_email ? `<p><strong>Email:</strong> ${order.customer_email}</p>` : ""}
           <p class="order-address"><strong>Адрес:</strong> ${order.address}</p>

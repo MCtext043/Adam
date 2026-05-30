@@ -1,0 +1,482 @@
+[
+  {
+    "vk_id": 14354410,
+    "name": "Антрекот из баранины",
+    "description": "Баранина, лук, зелень/250гр",
+    "price": "920",
+    "category": "Меню",
+    "image_url": "https://sun9-47.vkuserphoto.ru/impg/fGHqJ2ripxcLi594rtRORnW_6WvYxgrmU8zniw/xNbYygy2GmM.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=e9d825bed127e860670e186e6856affd&c_uniq_tag=SQ868gkUahkvuW16OrZX6pTyAhmT19zO_qGnvB30wVY&type=market_thumb"
+  },
+  {
+    "vk_id": 14354427,
+    "name": "Антрекот из свинины",
+    "description": "Антрекот из свинины, лук, зелень/250гр",
+    "price": "490",
+    "category": "Меню",
+    "image_url": "https://sun9-1.vkuserphoto.ru/impg/rlHUT42VFh3fdBIpBQf0RMfyQRxNVuQz3zzjRA/a06paTYEfZY.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=3c42bd78c7808c5a46715dca99e0fa81&c_uniq_tag=nSh3seO0sj2DBRsSwE2AtXsT0uCzq6vD_8wM4wsiWRk&type=market_thumb"
+  },
+  {
+    "vk_id": 14354197,
+    "name": "Ассорти из солений",
+    "description": "Сол.огурцы, сол.капуста, марин.помидоры, корнишоны.",
+    "price": "510",
+    "category": "Меню",
+    "image_url": "https://sun9-32.vkuserphoto.ru/impg/KPuDqu9TatQxl234k_GAvcmLoiP5SA5Q5sA7_Q/lbkok-swgeM.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=426917a2a6763fbb74d93d521495b194&c_uniq_tag=1GJdBusqrU-zjMwcWhoXIaYEPDa-Ovb0rysbqS2_hc0&type=market_thumb"
+  },
+  {
+    "vk_id": 14353727,
+    "name": "Ассорти сезонных фруктов",
+    "description": "Банан, апельсин, киви, груша, виноград, мандарин, яблоко",
+    "price": "890",
+    "category": "Меню",
+    "image_url": "https://sun9-52.vkuserphoto.ru/impg/hKuUaZsW_XPvKDbbkjmi3OLaS_SP2vBmc4kiaw/tHdyDnszFzE.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=6bea4cdba5e5c9e9122c7ea2f059a743&c_uniq_tag=JOcf6IHO2szMcx1cpk7wxnyk0XUcyheJCo8SGK8SpLs&type=market_thumb"
+  },
+  {
+    "vk_id": 14354235,
+    "name": "Борщ со сметаной",
+    "description": "Говядина, картофель, капуста, свекла, морковь, лук, зелень, сметана/ 450гр",
+    "price": "350",
+    "category": "Меню",
+    "image_url": "https://sun9-61.vkuserphoto.ru/impg/jI3lyhmn8ZEcm5ISgfpbJMBWLQX7KmoKJDz-cw/0sSokhKsSjY.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=cf2d434aacb7f30138098bb1e3833836&c_uniq_tag=_haLFtyb2DaZahcyeBwU_uiC1QvWUnXVksPCWRV4wIw&type=market_thumb"
+  },
+  {
+    "vk_id": 14354227,
+    "name": "Греческий",
+    "description": "Сыр фета, помидоры, болг.перец, св.огурец, маслины, раст.масло/ 200гр",
+    "price": "370",
+    "category": "Меню",
+    "image_url": "https://sun9-81.vkuserphoto.ru/impg/1NASf7qsC7Ey2aKPUsAGreJo224iLnwPlOn90A/UHI2dFrLKRg.jpg?size=604x604&quality=95&background=ffffff&crop=0.208,0,0.555,1&sign=4684d33824a60aa24adcfbb844254f60&c_uniq_tag=dFm57TloB21oJxrLjfEFD_XMa-4lQ2uTsdRah_-ts0g&type=market_thumb"
+  },
+  {
+    "vk_id": 14354297,
+    "name": "Долма",
+    "description": "Говядина, баранина, рис, лук, виноградные листья/ 200/40гр",
+    "price": "460",
+    "category": "Меню",
+    "image_url": "https://sun9-75.vkuserphoto.ru/impg/lonC6MulN30ETG262-oJQRMPle77ZkKYf5aRRw/FBZbBNZMAh0.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=21d7269f8687a3b8fe40c155c3dc670a&c_uniq_tag=q0a72NFKt51CDLVpsDHtq0PxWsOUL3tEDuVGExLQ3_s&type=market_thumb"
+  },
+  {
+    "vk_id": 14354339,
+    "name": "Дорадо на мангале",
+    "description": "Дорадо, шашлык-помидор, лук, лимон, зелень/350гр",
+    "price": "850",
+    "category": "Меню",
+    "image_url": "https://sun9-64.vkuserphoto.ru/impg/qucidH_BEnXjm0Gqhvno2YVoIMbDfr15-uDLUQ/v23n2iC9LaA.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=b22d5d62fdb1ea5dc48bdd121a3d8308&c_uniq_tag=U13SA7doxMKX3i431ITA8kSoxZsijyUUh5xN7BXYSDc&type=market_thumb"
+  },
+  {
+    "vk_id": 14354253,
+    "name": "Жаренные хинкали",
+    "description": "Фарш смешанный(свинина, говядина), лук, соль, перец, тесто",
+    "price": "90",
+    "category": "Меню",
+    "image_url": "https://sun9-72.vkuserphoto.ru/impg/8S2TmQXUlmgrXkqYmqCGspjwob8a8Y6oePD1oA/rzgvTWmg9GI.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=e340bf31077376faf25fa7b7ec98f562&c_uniq_tag=xNHfJnV0Q4rYaoYY4KVzkysXBXjgu3DPLRD6jiFzezs&type=market_thumb"
+  },
+  {
+    "vk_id": 14354252,
+    "name": "Жаренные хинкали с говядиной",
+    "description": "Фарш говядина, лук, соль, перец, тесто",
+    "price": "100",
+    "category": "Меню",
+    "image_url": "https://sun9-72.vkuserphoto.ru/impg/8S2TmQXUlmgrXkqYmqCGspjwob8a8Y6oePD1oA/a6oVYU4nRSY.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=a34779392dffe7c9849eb86cf6a8b8ea&c_uniq_tag=0afJG7gjYUKYopsYNfFfhKyDdsAxUd2i2JJVwkXm6xo&type=market_thumb"
+  },
+  {
+    "vk_id": 14354202,
+    "name": "Зелень",
+    "description": "Укроп, петрушка, кинза, зел.лук, редис",
+    "price": "320",
+    "category": "Меню",
+    "image_url": "https://sun9-56.vkuserphoto.ru/impg/LF5iCqsZP0CsHBRxL8NTlNEB-ddMKdd_NNEbzQ/0sKw2oEhLQs.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=d4e28fc50395170cfe7c201f0224fc04&c_uniq_tag=w2mextuO07V6bKBac23hoVcpygpUWD9UXQ5km7W9iKo&type=market_thumb"
+  },
+  {
+    "vk_id": 14354486,
+    "name": "Картофель фри",
+    "description": "Свежий картофель фри, сырный соус /150/50гр",
+    "price": "240",
+    "category": "Меню",
+    "image_url": "https://sun9-10.vkuserphoto.ru/impg/fiDybnkbgTqhZfLkXjv9ub4PwIX4F0IxQEtKMg/FuiWMEp4KcM.jpg?size=604x604&quality=95&background=ffffff&crop=0.157,0,0.555,1&sign=59596d2a67f22377869ba71021241b92&c_uniq_tag=Gl5vQqfq0pRG9GuvrkhXqO7M1wm5EatFVEvJIXk6vw8&type=market_thumb"
+  },
+  {
+    "vk_id": 14354185,
+    "name": "Креветки",
+    "description": "Креветки отварные, укроп, лимон",
+    "price": "650",
+    "category": "Меню",
+    "image_url": "https://sun9-84.vkuserphoto.ru/impg/g6eQ4Tl-8XfOgM6k-58rW0B5K784FHdTd25z0w/3M57ZNsi5bA.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=414ed0ceea8db8067a78a9006d3ac64b&c_uniq_tag=5C8maZxaAjqUGSHktCm8fkOcnIFlet_RYg7nhhj5bOY&type=market_thumb"
+  },
+  {
+    "vk_id": 14354360,
+    "name": "Куриное филе",
+    "description": "Куриное филе, лук, зелень/200",
+    "price": "370",
+    "category": "Меню",
+    "image_url": "https://sun9-71.vkuserphoto.ru/impg/ofp1QTA65rapvN-bqEKVqiEsb_ROQAMIB2beWA/uYVPq_NlXOo.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=7fdbb1d11439ce3d48f7bec8ee75914b&c_uniq_tag=OmGVxFEjvtgmuW29enDjrbGZqWdY5pNF9J4sAEQiLhc&type=market_thumb"
+  },
+  {
+    "vk_id": 14354358,
+    "name": "Куриные крылышки",
+    "description": "Куриные крылья, лук, зелень/200гр",
+    "price": "360",
+    "category": "Меню",
+    "image_url": "https://sun9-67.vkuserphoto.ru/impg/PAdYSl7D3GsRjE0CzSB5IyQ5VwYIr1Uq7AtXzw/9s9l3jogQxU.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=0f79437c193c0520e9d578067bd68612&c_uniq_tag=42RkahkWdrraOLvzvv08DwSie9HAyc1yQHvjLQsVKHs&type=market_thumb"
+  },
+  {
+    "vk_id": 14354271,
+    "name": "Кутабы с говядиной",
+    "description": "Кутаб (гутаб) — мучное блюдо азербайджанской, татской и туркменской кухонь, тонкий пирожок в форме полукруга из пресного теста с начинкой/ 120гр",
+    "price": "150",
+    "category": "Меню",
+    "image_url": "https://sun9-13.vkuserphoto.ru/impg/F8rUZTA7f9VL0r2nnsOFbbYK0r-L9KiDiljcxQ/9JgvGBzVD80.jpg?size=604x604&quality=95&background=ffffff&crop=0.078,0,0.555,1&sign=9ce62bc5c32c73fba5d52546fcacb923&c_uniq_tag=QwisJTzdD-KTELjFGlQTVy6j_JjwOBzwRN4SGZ_YGJU&type=market_thumb"
+  },
+  {
+    "vk_id": 14354270,
+    "name": "Кутабы с зеленью",
+    "description": "Кутаб (гутаб) — мучное блюдо азербайджанской, татской и туркменской кухонь, тонкий пирожок в форме полукруга из пресного теста с начинкой/ 120гр",
+    "price": "150",
+    "category": "Меню",
+    "image_url": "https://sun9-80.vkuserphoto.ru/impg/VjduUT9HBSZEzko7DUviC7SJKP5KCtlUlo50tg/_1ieFDjAsQg.jpg?size=604x604&quality=95&background=ffffff&crop=0.106,0,0.555,1&sign=bc3f65f6f81c4a4b7b08e99b32314e18&c_uniq_tag=7oGY1Ly-CNhifpIRCAyQ-CoHKnR4FlfIhAYm1ZYr_mA&type=market_thumb"
+  },
+  {
+    "vk_id": 14354274,
+    "name": "Кутабы с сыром",
+    "description": "Кутаб (гутаб) — мучное блюдо азербайджанской, татской и туркменской кухонь, тонкий пирожок в форме полукруга из пресного теста с начинкой/ 120гр",
+    "price": "150",
+    "category": "Меню",
+    "image_url": "https://sun9-46.vkuserphoto.ru/impg/MxvjmkHgeXBWJMcssVyZrk55fDxc9hWuTCtyPw/rGc-r2LcGkc.jpg?size=604x604&quality=95&background=ffffff&crop=0,0,0.709,1&sign=2c056850c9951e119ebc96eceb1a689c&c_uniq_tag=AKQLPCM0sqIqlSAPoZy2GyLa6wX1DvyHoGmz2205wlc&type=market_thumb"
+  },
+  {
+    "vk_id": 14354467,
+    "name": "Лаваш",
+    "description": "Свежий лаваш",
+    "price": "60",
+    "category": "Меню",
+    "image_url": "https://sun9-15.vkuserphoto.ru/impg/k7TWMsgCWQ30J4J0u1hEX2cnGD8Z8HcwqUzB6g/jTV0t0brBgs.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=de989bdae417357e13b9cd3ec01e5d83&c_uniq_tag=mcnqHQhRW4sedM4hAgdg-rHf7Fz5EsqQm2sTcv1XA38&type=market_thumb"
+  },
+  {
+    "vk_id": 14354232,
+    "name": "Лагман",
+    "description": "Говядина, помидоры, баклажаны, фасоль, болгарский перец, лук, лапша/ 450гр",
+    "price": "390",
+    "category": "Меню",
+    "image_url": "https://sun9-81.vkuserphoto.ru/impg/w6xh_kNUXt_5pR-_0g5U8ZlwTYUztQBsTvo8kw/iTuYRzb2WZI.jpg?size=604x604&quality=95&background=ffffff&crop=0.208,0,0.555,1&sign=38080e5f9995d7c251c49e3d1ab9407e&c_uniq_tag=Pi4_6SDcJz8eDNi83lCxAGxm2wN3c8VK-YkjchjjGK8&type=market_thumb"
+  },
+  {
+    "vk_id": 14354200,
+    "name": "Лимонная нарезка",
+    "description": "Лимонная нарезка",
+    "price": "130",
+    "category": "Меню",
+    "image_url": "https://sun9-1.vkuserphoto.ru/impg/O-LrMGGOFBPMBvF0NWDtWWIIywpUWxer7P4Qjw/tsI0zs-KpLk.jpg?size=604x604&quality=95&background=ffffff&crop=0.196,0,0.555,1&sign=beab2d01608edef3c68cb4d1f633a985&c_uniq_tag=yNyrTttaYYAuRGbIRdUW3KlR9HcZ6mQyQJoUlDnOk1o&type=market_thumb"
+  },
+  {
+    "vk_id": 14354355,
+    "name": "Люля - кебаб из баранины",
+    "description": "Баранина, лук, зелень, лаваш, фирменный соус/200/40",
+    "price": "500",
+    "category": "Меню",
+    "image_url": "https://sun9-59.vkuserphoto.ru/impg/GggosunMMo4RLJveqmd8dIZ4vokh126sedSAGg/4eMLqOvsw08.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=827b1036041a75d39f029f1db9920f26&c_uniq_tag=JuD5dPDPp8NUMbweRk_icWJVjC_K9uiLk2cyR-5bsEo&type=market_thumb"
+  },
+  {
+    "vk_id": 14354356,
+    "name": "Люля - кебаб из курицы",
+    "description": "Фарш куриный, лук, зелень, лаваш, фирменный соус/200/40гр",
+    "price": "420",
+    "category": "Меню",
+    "image_url": "https://sun9-34.vkuserphoto.ru/impg/9McVVTVicbHbgbGS5ArnugZeNqUxn8iYS0bY9A/ZBa8tTlMg14.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=bba4f4fd43c3889bcac64bc229db7773&c_uniq_tag=jq5izfGZHhMh-HoL7Azyz_36EiCLHm09h9hBcfkZrRg&type=market_thumb"
+  },
+  {
+    "vk_id": 14353639,
+    "name": "Мясное ассорти",
+    "description": "Балык, ветчина, п/к колбаса, язык говяж, грудка свиная",
+    "price": "890",
+    "category": "Меню",
+    "image_url": "https://sun9-70.vkuserphoto.ru/impg/LMO-_LewOcD0FqlMISthE4c4tfMPlFelqYcYJQ/tq8B2mTSeeQ.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=af5dc69ca1d8dd0a222fdd61af7f43e0&c_uniq_tag=JavGA1m48vDTV2U370F_gUgU96gttTlOn9zlQv99SrY&type=market_thumb"
+  },
+  {
+    "vk_id": 14354195,
+    "name": "Овощное ассорти",
+    "description": "Огурцы свеж, помидоры свеж, болг.перец, зелень",
+    "price": "360",
+    "category": "Меню",
+    "image_url": "https://sun9-72.vkuserphoto.ru/impg/JP40cqdlxHw_aHxyAdwfLRxoLnnyIrCcMPCS2A/8jNVLqHJotY.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=a37a85c758d2e0266d85e7a655fdea84&c_uniq_tag=TvWF6-BmpIMILhHMk61HGQbzSc1rW4nY8IvnDc3s_FQ&type=market_thumb"
+  },
+  {
+    "vk_id": 14354221,
+    "name": "Оливье с лососем",
+    "description": "Картофель отварной, яйцо, лосось, зел.горошек, сол.огурец, майонез/ 200гр",
+    "price": "350",
+    "category": "Меню",
+    "image_url": "https://sun9-30.vkuserphoto.ru/impg/AHgO5mmw19XSk9hzGSitAT7lHkWl_jXoiyj9Cw/rCFWHXqUIug.jpg?size=604x604&quality=95&background=ffffff&crop=0.204,0,0.555,1&sign=4c7bfcad547e4bb2129383c8d31e8b0b&c_uniq_tag=aIBEu5KZOoD76REo6Yr6HPu_vu9XotexLzCLchzkb54&type=market_thumb"
+  },
+  {
+    "vk_id": 14354319,
+    "name": "Омлет с помидорами",
+    "description": "Нежный омлет с помидорами/ 250гр",
+    "price": "260",
+    "category": "Меню",
+    "image_url": "https://sun9-58.vkuserphoto.ru/impg/YkKC1nx10YiuMCC6RMeOD7QqRrl2BnFZ4sxC0w/PvUx9jzlfVI.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=9ef5b21ba6e098ce0a7793c64c3dbf75&c_uniq_tag=djSqnYTikDCiUTcI8kMmVKe9ZKmCBgnZVH7sVnFhrU8&type=market_thumb"
+  },
+  {
+    "vk_id": 14354220,
+    "name": "Парус",
+    "description": "Кукуруза, морковь по-кор, копч.курица, яйцо, св.огурец, чипсы, майонез/ 200гр",
+    "price": "390",
+    "category": "Меню",
+    "image_url": "https://sun9-53.vkuserphoto.ru/impg/oxvPF9j6aokG1oLG_xZrun409A6ElBdXVTx__g/fNYBe0jxSyw.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=a4aa83dbb9fabd59872098a69eb3ecb0&c_uniq_tag=x9lVbyKPAANoYydkagTOAjxe8Wtgv1krFOgQllNg1dQ&type=market_thumb"
+  },
+  {
+    "vk_id": 14354244,
+    "name": "Пельмени жареные",
+    "description": "Фарш: говядина, свинина, лук, соль, перец, тесто/ 200гр",
+    "price": "300",
+    "category": "Меню",
+    "image_url": "https://sun9-68.vkuserphoto.ru/impg/_SiQpzZRXzmXIEP0plU4hdnw5l_waGsVog8chw/bnugZkmDHc4.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=322c9308d23cdd027dc79a5201be08c4&c_uniq_tag=cX7SpmnpV8D1Cj286wBKmjLXCoBSk793iv7ob5xvMWI&type=market_thumb"
+  },
+  {
+    "vk_id": 14354243,
+    "name": "Пельмени отварные",
+    "description": "Фарш: говядина, свинина, лук, соль, перец, тесто/ 200гр",
+    "price": "300",
+    "category": "Меню",
+    "image_url": "https://sun9-76.vkuserphoto.ru/impg/iesp3kAFyryaD3_8nWw-mAqx1KjIuJEWZruQbw/uaMEObXhibA.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=63ce19d63b6886b3158f5d9856b5505d&c_uniq_tag=sMVOo-BKA-9Sli2sOex1IWnT4sTva9yRFekqzg7399M&type=market_thumb"
+  },
+  {
+    "vk_id": 14354283,
+    "name": "Пицца куриная",
+    "description": "Тесто, соус красный, копченая курица, шампиньоны, маслины, лук красный, сыр Моцарелла, сыр Голландский, масло/ 500гр",
+    "price": "500",
+    "category": "Меню",
+    "image_url": "https://sun9-71.vkuserphoto.ru/impg/YBG39RLoOQwVo-OPXZtoBwFEGBpJlPNjpZQPjw/9T88emWOSEc.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=a745af25b4e4f424126f24f3c6451525&c_uniq_tag=QPCOhbOMPXXxHShLJ7Lo6Lr_1Ehxfxrk3wKhcWRZSXc&type=market_thumb"
+  },
+  {
+    "vk_id": 14354285,
+    "name": "Пицца пепперони",
+    "description": "Тесто, красный соус, пепперони, сыр Моцарелла, сыр Голландский, масло/ 500гр",
+    "price": "490",
+    "category": "Меню",
+    "image_url": "https://sun9-51.vkuserphoto.ru/impg/gBpLJ65hxquktGPEU75ZHVT4cd2HXV4iwjV79w/JuX_ZD4I_jE.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=0f7f9bad09292cfcf0d1b5aed280fbbd&c_uniq_tag=JVbgiRCNLvxGBNlMLirfg8JpuC-1jJCsmPnigbDLfas&type=market_thumb"
+  },
+  {
+    "vk_id": 14354308,
+    "name": "Плов по - узбекски",
+    "description": "Узбекский плов — традиционное блюдо восточной кухни, основу которого составляет рассыпчатый рис с мясом, овощами и ароматными специями. В Узбекистане существует множество вариаций плова, которые различаются по технологии приготовления, ингредиентам и региональным особенностям/ 350/80гр",
+    "price": "440",
+    "category": "Меню",
+    "image_url": "https://sun9-83.vkuserphoto.ru/impg/HRaAnNxTfK5Ipqcq6bxS5HhrHUvB_nrPkcl8oA/rFl6qJvB8F0.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=4c3298dbe398120a3aab9af77a40049a&c_uniq_tag=enKdpQSrVEnMTvyoIbGNUTQ_5AZc-ZJWqjZCTtfr9Mw&type=market_thumb"
+  },
+  {
+    "vk_id": 14353834,
+    "name": "Рулетики из баклажанов с чесноком и грецким орехом",
+    "description": "Баклажан, курица, грибы, сметана, чеснок, грецкий орех, соль, майонез, зелень",
+    "price": "320",
+    "category": "Меню",
+    "image_url": "https://sun9-14.vkuserphoto.ru/impg/_-T06OYSiUmiCgcYBMk4SLd_lMzy9JnswuVdCQ/a-5G89KazIU.jpg?size=604x604&quality=95&background=ffffff&crop=0.196,0,0.555,1&sign=388b7aea60c55a8fd93322368fff2889&c_uniq_tag=u5WZlCi563xNK8ypVGsQwjsI7_CvBo3dELcMZhQwUqQ&type=market_thumb"
+  },
+  {
+    "vk_id": 14354092,
+    "name": "Рыбное ассорти",
+    "description": "Семга, масляная рыба, скумбрия, сл.масло, икра",
+    "price": "830",
+    "category": "Меню",
+    "image_url": "https://sun9-86.vkuserphoto.ru/impg/OiXeofFE4_G3jNSmAZ547zonpgN8EaA35FYOAw/eentG3vacFs.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=0456b676d3f6ea9ef01df7c88568cf4e&c_uniq_tag=zhi-W4u3Y-pcZHuUApR2enxNH6lxhcsm8pWNW5LiX_4&type=market_thumb"
+  },
+  {
+    "vk_id": 14354217,
+    "name": "Салат с рукколой и креветками",
+    "description": "Креветки, руккола, помидоры черри, пармезан, оливковое масло, лимонный сок, соль, перец./ 200гр",
+    "price": "470",
+    "category": "Меню",
+    "image_url": "https://sun9-15.vkuserphoto.ru/impg/4URO-Ski6jPiKYtF8bj7bzfZJnqCMsxbcNeADQ/B_sTmSARhJM.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=04eee1c0a5538985de512aee160585b4&c_uniq_tag=FiolUCROWAolYGXPbx56pIVd7RYA5dEZtidWxM9zpgo&type=market_thumb"
+  },
+  {
+    "vk_id": 14353904,
+    "name": "Сельдь с картофелем",
+    "description": "Сельдь, картофель, лук, зелень, уксус, раст.масло",
+    "price": "510",
+    "category": "Меню",
+    "image_url": "https://sun9-41.vkuserphoto.ru/impg/Mm_ZD0Xt250LfMveAJShOfBmqYsQ3F2I6LD8gg/i0kfWnLiC7E.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=484e99da6fb83fecfc7d2eb89b665e13&c_uniq_tag=Ez_hPxd1lTq1VfB0xzGhQ4ToMYwC0a1U2nn5pPdr0KI&type=market_thumb"
+  },
+  {
+    "vk_id": 14354333,
+    "name": "Семга на мангале",
+    "description": "Семга, лук, зелень, соус наршараб/ 200гр",
+    "price": "590",
+    "category": "Меню",
+    "image_url": "https://sun9-46.vkuserphoto.ru/impg/wlVH-hRDKlzkrfhnyzMAownIUOl9E1_BToQkNQ/kBhlm2mFhvo.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=d8f80129f7a593c1d8c9183ab9d8f865&c_uniq_tag=tWOIb_ubQrt_1rV_d0iaQWCzli-wV5OOjXHCakzUswg&type=market_thumb"
+  },
+  {
+    "vk_id": 14354349,
+    "name": "Скумбрия с молодым картофелем",
+    "description": "Скумбрия, молодой картофель, лук, зелень, лимон/ 350/100гр",
+    "price": "490",
+    "category": "Меню",
+    "image_url": "https://sun9-71.vkuserphoto.ru/impg/6OQoFQuSg0SV093gOSDHwua2vWMlMxKPs1YU5A/rsoe5e2sjWY.jpg?size=604x604&quality=95&background=ffffff&crop=0.153,0,0.555,1&sign=a26eb1b221095f3f478a646481b961eb&c_uniq_tag=L6FUgaLqVsiNzYspd9fHU9yNRAKe8sOOVdTTGoyD8Qw&type=market_thumb"
+  },
+  {
+    "vk_id": 14354199,
+    "name": "Соления по-азербайджански",
+    "description": "Кап.сол, перец сол, помидоры сол, огурцы сол",
+    "price": "510",
+    "category": "Меню",
+    "image_url": "https://sun9-88.vkuserphoto.ru/impg/zf7HODvanbyWveGJQ3qrW9FSg9mZDmP08q3Fcg/hSGsNlm0y98.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=fc81a0d9e67e6f544110d887d86cce75&c_uniq_tag=eXE5ni48qfeAoG2pAgYe6629EezmB-gDpdoLwNzWoRU&type=market_thumb"
+  },
+  {
+    "vk_id": 14354230,
+    "name": "Солянка",
+    "description": "Колбаса, ветчина, балык, соленые огурцы, маслины, лук, зелень/ 400мл",
+    "price": "360",
+    "category": "Меню",
+    "image_url": "https://sun9-57.vkuserphoto.ru/impg/QJJdqjuHLT7XIPMnQiKQDl0zOVqroNK82jOnoA/w5YmBoQyYOs.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=f3b180de37a1ed2be1a1232dae75ed34&c_uniq_tag=EnYYK3yFEbC-zCEAuHyOdJ1YNoDrwwm-TDAFnQtf6JE&type=market_thumb"
+  },
+  {
+    "vk_id": 14354231,
+    "name": "Соютма",
+    "description": "Баранина, лук, зелень/ 450гр",
+    "price": "520",
+    "category": "Меню",
+    "image_url": "https://sun9-66.vkuserphoto.ru/impg/Yf2tSJqHLOLZoiFAI8Zdl2iMjf9Am7F0_m2O6w/BtRZwunDfMU.jpg?size=604x604&quality=95&background=ffffff&crop=0.216,0,0.555,1&sign=dabc3d73bac2f1dad64a5d6fe17b16dc&c_uniq_tag=vPIqQhBYalWlWfWBkyMh_F-Enmz-RfXsYUgbjZu7l74&type=market_thumb"
+  },
+  {
+    "vk_id": 14354241,
+    "name": "Суп - пюре из чечевицы",
+    "description": "Чечевица, картофель, морковь, лук, томатная паста, мята, лимон, гренки/ 350гр",
+    "price": "390",
+    "category": "Меню",
+    "image_url": "https://sun9-75.vkuserphoto.ru/impg/m578PoxGakz5ABDaI8MQzvh0d6aG35kjMQZ9qA/2rAHQP53Ls4.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=ad0ed71b13e341bf59c6fe27f7394b7a&c_uniq_tag=pCV2678S5BmyvGzhdfC3ih17tCjUPYEJLbA-2RaWLao&type=market_thumb"
+  },
+  {
+    "vk_id": 14354190,
+    "name": "Сыр \"Домашний\"",
+    "description": "Сыр \"Домашний\"",
+    "price": "270",
+    "category": "Меню",
+    "image_url": "https://sun9-40.vkuserphoto.ru/impg/MdmZgTNbxQibKYY7kZHZXM2x4Vd9jHVURp30ZA/FqLHa7NNugM.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=d984606c39f0c88f65dff9a1f790cc4f&c_uniq_tag=4uwJbjVn3m3N-9kQVXHc5O5yZXdq9zAmPPg-jpg01Lw&type=market_thumb"
+  },
+  {
+    "vk_id": 14354001,
+    "name": "Сырное ассорти",
+    "description": "Сыр песто, бри, пармезан, чеддер, виноград, мед, грец.орех",
+    "price": "850",
+    "category": "Меню",
+    "image_url": "https://sun9-82.vkuserphoto.ru/impg/iM2BTpgvetrBV2Yzeg1Iemy3TP--DHB0o7iSgg/-zZahiA1Wmg.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=670323460f426516b35bc21500943df0&c_uniq_tag=qU2kF0LxyTgTeOhGYho_la95stjYXaU5b26A0EywSls&type=market_thumb"
+  },
+  {
+    "vk_id": 14354218,
+    "name": "Теплый салат с баклажаном",
+    "description": "Баклажан жареный, помидоры свежие, помидоры черри, салат листовой, лук красный, кинза, чеснок, лимон, маслины, устричный соус, сладкий чили соус/ 270гр",
+    "price": "370",
+    "category": "Меню",
+    "image_url": "https://sun9-39.vkuserphoto.ru/impg/uJddOMwnZXuOw-_N60B2Xx9NKU5AqaRsohhpnQ/XsTOYK8ZL6g.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=970f7e1e81ea4315546d814f7b55c224&c_uniq_tag=xD2uD4bXsWhgfyur5Px8OrZsIqYvRbJ-f3dnHWZPYps&type=market_thumb"
+  },
+  {
+    "vk_id": 14354237,
+    "name": "Уха с креветками",
+    "description": "Уха с креветками/350\\70\\50гр",
+    "price": "480",
+    "category": "Меню",
+    "image_url": "https://sun9-61.vkuserphoto.ru/impg/mOAaYJ2G2mwd-5scg9b2sGGfitbhld9d4v25hA/NlE6ITySs0o.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=458426481c177ee63de1ffede47c9fed&c_uniq_tag=ER_UV9uhrYXyNCgJ8RTPy4m9glL7g_w-19wTsLFkuJE&type=market_thumb"
+  },
+  {
+    "vk_id": 14354292,
+    "name": "Филе Миньон",
+    "description": "Филе телятины, салат \"Айсберг\", базилик, красный лук, сыр, соус бальзамический, специи/ 200/100/20 гр",
+    "price": "1100",
+    "category": "Меню",
+    "image_url": "https://sun9-13.vkuserphoto.ru/impg/2FWlX7QuDs9_x9cfILIe2sYOUJ9UhCR9i20M4g/DBvpeiBVk28.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=81f22bb4d6340fa12f1b03b4862f1da7&c_uniq_tag=BvagtiZumbOqG4eOcmMKy62VLtZwYmRc27OtMvdYt1U&type=market_thumb"
+  },
+  {
+    "vk_id": 14354277,
+    "name": "Хачапури по - аджарски",
+    "description": "Хачапури по-аджарски — грузинское блюдо в виде открытой лодочки с начинкой из нескольких видов сыра, сырого желтка и сливочного масла/ 400гр",
+    "price": "450",
+    "category": "Меню",
+    "image_url": "https://sun9-62.vkuserphoto.ru/impg/xQvPkjAR4foRoZ9rmukyBM0yrBdY6FYz2wd-lQ/7F9bU_mUlT8.jpg?size=604x604&quality=95&background=ffffff&crop=0.11,0,0.555,1&sign=45946e0b5a62d3c735fea2a58e471187&c_uniq_tag=PGO8IZPXXT_Od75p1Zms4eq3hQP8AlfThvg6PdAhccw&type=market_thumb"
+  },
+  {
+    "vk_id": 14354278,
+    "name": "Хачапури по - мегрельски",
+    "description": "Хачапури по-мегрельски — это разновидность грузинской выпечки в форме круглой лепёшки с сыром. Отличительная особенность — сыр кладётся не только внутрь, но и сверху, что придаёт блюду насыщенный сливочный вкус и хрустящую корочку/ 400гр",
+    "price": "440",
+    "category": "Меню",
+    "image_url": "https://sun9-18.vkuserphoto.ru/impg/PuURfuSkE_xB9TetrkPd5KUtF5PgyBJAM7A1IQ/1C3rQpMrZ7A.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=685483dcf70a655fbdd2a811391d9cdb&c_uniq_tag=sUWNBizMJlKvSaqPwoj12JwVgfJj944V-bONbA0ekd0&type=market_thumb"
+  },
+  {
+    "vk_id": 14354249,
+    "name": "Хинкали",
+    "description": "Фарш смешанный(говядина, свинина), лук, соль, перец, тесто/ минимальный заказ 5шт",
+    "price": "80",
+    "category": "Меню",
+    "image_url": "https://sun9-57.vkuserphoto.ru/impg/H83tn9CGP1aycu3_TBMiKvZ9oITk6MiQVBPrAA/nx1Ew0N6Szg.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=39acb2ae29568ea7296f3ba817854edf&c_uniq_tag=SkI641bR6Ddq6A8sdEUjU3OKfzmNxUhMBbrJh0y29O8&type=market_thumb"
+  },
+  {
+    "vk_id": 14354247,
+    "name": "Хинкали с говядиной",
+    "description": "Фарш говядина, лук, соль, перец, тесто",
+    "price": "90",
+    "category": "Меню",
+    "image_url": "https://sun9-57.vkuserphoto.ru/impg/H83tn9CGP1aycu3_TBMiKvZ9oITk6MiQVBPrAA/PkPTy818Bbo.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=618ccc978df7a2839f47bb2192cb91de&c_uniq_tag=tyUYr0UzZrEPeUlXTLMu6UJKlTgb5hnMrF0PMak2mwg&type=market_thumb"
+  },
+  {
+    "vk_id": 14354225,
+    "name": "Цезарь",
+    "description": "Салат Айсберг, курица, черри, пармезан, сухарики, соус классический/ 240гр",
+    "price": "370",
+    "category": "Меню",
+    "image_url": "https://sun9-5.vkuserphoto.ru/impg/T5zP6U-dRTghtr83wu1sEGPEomLeNTI5pzjrVA/PY0PLpjvUWY.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=17559f4cd4e1586a7088978fae378466&c_uniq_tag=j4KRSNhmfuRuTnsUmLaKz9W5ybLplwMSCkbwe8QInz0&type=market_thumb"
+  },
+  {
+    "vk_id": 14354222,
+    "name": "Цезарь с креветками",
+    "description": "Салат Айсберг, креветки, черри, пармезан, сухарики, соус классический",
+    "price": "480",
+    "category": "Меню",
+    "image_url": "https://sun9-64.vkuserphoto.ru/impg/1hSrxI3L-S-m8RfhmEPr7-9hx5FBn4YXQna_Lg/3Cioyj6_FMA.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=0eb2e71db8d33c0566efe19b36a04c6d&c_uniq_tag=-ZYpdLjo9VOQNEXEOqCJmehxJJq9-gWRJ2kbpC3aRo4&type=market_thumb"
+  },
+  {
+    "vk_id": 14354258,
+    "name": "Чебуреки",
+    "description": "Чебуреки со смешанным фаршем(свинина, говядина).",
+    "price": "260",
+    "category": "Меню",
+    "image_url": "https://sun9-56.vkuserphoto.ru/impg/QAbQDuPu7vREfDh5To2ezP8o4Gx7TnwJyMr1Ww/q_wmYtiv9bs.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=f80e36f4379420df512f64456cde081f&c_uniq_tag=p0yKSGm9fu4SkJG-dMnYl0YCQUMq8KuOP6ReBe8BMcA&type=market_thumb"
+  },
+  {
+    "vk_id": 14354255,
+    "name": "Чебуреки с говядиной",
+    "description": "Чебуреки с мясом из говядины",
+    "price": "270",
+    "category": "Меню",
+    "image_url": "https://sun9-56.vkuserphoto.ru/impg/QAbQDuPu7vREfDh5To2ezP8o4Gx7TnwJyMr1Ww/T3hsh83t3F0.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=cb8addfa478cb34a7f97fd9b857438f0&c_uniq_tag=67h0dbz6EDnXEnGt_mX4gc1eL4RukXhC4_7GUeb1ue0&type=market_thumb"
+  },
+  {
+    "vk_id": 14354215,
+    "name": "Чобан",
+    "description": "Помидоры, огурцы, лимон, зелень, раст.масло/400гр",
+    "price": "460",
+    "category": "Меню",
+    "image_url": "https://sun9-85.vkuserphoto.ru/impg/z6g1On6CCfxS8phi8fdr-m_1pqyHU91hVE1n0A/yDlCyv5LpB8.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=53b951ba644faac8a491f9f58208fa90&c_uniq_tag=4uQx_LaDhRkL7SHNCVPao27U10WyI1GR6jiwHKoANzA&type=market_thumb"
+  },
+  {
+    "vk_id": 14354314,
+    "name": "Чыхыртма из курицы",
+    "description": "Куриное филе и крылья, обжаренные с томатами и луком,\nв омлете с зеленью и ароматными специями/1000гр",
+    "price": "1000",
+    "category": "Меню",
+    "image_url": "https://sun9-78.vkuserphoto.ru/impg/xAOjEvqqBIqPhl26nEplabSBpOM43KT62kyKGg/5G385u9UghY.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=688980758710a8b3ad4472b7f43fab47&c_uniq_tag=e0mA9cahhPjTW_cqZAWMtkWSv36GclEu9T5G8re9YdU&type=market_thumb"
+  },
+  {
+    "vk_id": 14354444,
+    "name": "Шашлык из баранины",
+    "description": "Баранина, лук, зелень/200гр",
+    "price": "550",
+    "category": "Меню",
+    "image_url": "https://sun9-14.vkuserphoto.ru/impg/pczqUPNExrcCaYD1tQvCpZndN9A5ZRJ_ZmzOSA/tmFcZRDhm5I.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=964538fb4c6f5a21b1bee6887c08fb6c&c_uniq_tag=D_x47h0S1rRZJVcCTEtgaK-l0Zm2QunIERMyu2-FJlw&type=market_thumb"
+  },
+  {
+    "vk_id": 14354379,
+    "name": "Шашлык из свинины",
+    "description": "Свинина, лук, зелень/200гр",
+    "price": "490",
+    "category": "Меню",
+    "image_url": "https://sun9-28.vkuserphoto.ru/impg/5d6ZuSLVCsjxPh6fG2l1Iy8Md4roKmngx4Pwxg/gdJCklzT88o.jpg?size=604x604&quality=95&background=ffffff&crop=0.084,0,0.833,1&sign=609f598f96649e2979679a9cab4455ef&c_uniq_tag=oQd7t2P1aRF73a48DO6JDZdDWeZU1Z6QgNVH3TeDbb4&type=market_thumb"
+  }
+]

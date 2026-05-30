@@ -68,7 +68,10 @@
           Комментарий
           <textarea name="comment" placeholder="Например: не звонить в домофон"></textarea>
         </label>
-        <button class="button button-dark" type="submit">Отправить заказ</button>
+        <button class="button button-dark" type="submit" id="orderSubmitBtn">Отправить заказ</button>
+        <p class="checkout-payment-hint" id="checkoutPaymentHint" hidden>
+          Оплата через СБП (НКО «ЭЛПЛАТ»). После оформления откроется QR-код и ссылка для оплаты в приложении банка.
+        </p>
         <p class="form-message" id="orderMessage"></p>
       </form>
     </section>

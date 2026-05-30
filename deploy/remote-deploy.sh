@@ -13,11 +13,22 @@ fi
 
 sed -i 's/\xEF\xBB\xBF//g; s/\r$//' .env
 
-for key in SMTP_HOST SMTP_PORT SMTP_USE_TLS SMTP_USER SMTP_PASSWORD SMTP_FROM SMTP_FROM_NAME SESSION_SECRET ADMIN_USERNAME ADMIN_PASSWORD; do
-  sed -i "/^${key}=/d" .env
-done
+while IFS= read -r line || [ -n "$line" ]; do
+  case "$line" in
+    ''|\#*) continue ;;
+    *=*)
+      key="${line%%=*}"
+      sed -i "/^${key}=/d" .env
+      ;;
+  esac
+done < /tmp/adam-smtp.env
 
 cat /tmp/adam-smtp.env >> .env
+
+if ! grep -q '^SESSION_SECRET=.' .env 2>/dev/null; then
+  sed -i '/^SESSION_SECRET=/d' .env
+  echo "SESSION_SECRET=$(openssl rand -hex 32 2>/dev/null || head -c 32 /dev/urandom | xxd -p -c 64)" >> .env
+fi
 sed -i 's/\xEF\xBB\xBF//g; s/\r$//' .env
 
 if grep -q '^SMTP_USER=' .env; then

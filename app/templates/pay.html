@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Оплата заказа | Кафе Адам</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body class="pay-body">
+  <main class="pay-card">
+    <a class="brand" href="/">
+      <span class="brand-mark">
+        <img src="/static/img/adam-logo.png" alt="Логотип кафе Адам">
+      </span>
+      <span>Кафе Адам</span>
+    </a>
+    <h1 class="pay-title">Оплата по СБП</h1>
+    <p class="pay-order-id">Заказ №<span id="payOrderId">{{ order_id }}</span></p>
+    <p class="pay-amount" id="payAmount"></p>
+
+    <div id="payLoading" class="pay-loading">Формируем QR-код…</div>
+    <div id="payBlock" class="pay-qr-block" hidden>
+      <div class="pay-qr-wrap">
+        <div id="payQrCode" class="pay-qr-canvas" aria-label="QR-код для оплаты"></div>
+        <img class="pay-sbp-logo" src="https://retail.el-plat.ru/img/logo_sbp.png" alt="СБП" width="72" height="72">
+      </div>
+      <p class="pay-hint">
+        Откройте приложение вашего банка, выберите «Оплатить по QR» и наведите камеру на код.
+      </p>
+      <button type="button" class="button pay-sbp-button" id="payMobileBtn" hidden>
+        <img src="https://retail.el-plat.ru/img/logo_sbp.png" alt="" width="35" height="35">
+        Оплатить в приложении банка
+      </button>
+      <p class="pay-legal">
+        Расчёты осуществляет НКО «ЭЛПЛАТ». Контактный телефон: <a href="tel:*2717">*2717</a> (звонок с мобильного бесплатно).
+      </p>
+    </div>
+
+    <div id="paySuccess" class="pay-success" hidden>
+      <div class="pay-success-icon" aria-hidden="true">✓</div>
+      <h2>Оплата прошла успешно</h2>
+      <p>Заказ принят в работу. Письмо с деталями отправим на email, если вы его указали.</p>
+      <a class="button button-dark" href="/">На главную</a>
+    </div>
+
+    <p class="form-message error" id="payError" hidden></p>
+  </main>
+
+  <script>
+    window.PAY_ORDER_ID = {{ order_id }};
+    window.PAY_TOKEN = {{ payment_token | tojson }};
+    window.ELPLAT_ENABLED = {{ elplat_enabled | tojson }};
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="/static/js/pay.js"></script>
+</body>
+</html>

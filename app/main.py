@@ -1,13 +1,24 @@
+import json
 import os
 import secrets
 from contextlib import contextmanager
 from datetime import datetime
 from decimal import Decimal
+from pathlib import Path
 from typing import Annotated, Generator
 
+from app.admin_auth import clear_admin, is_admin, set_admin
+from app.elplat import (
+    callback_ip_allowed,
+    create_dynamic_qr,
+    elplat_config,
+    elplat_ready,
+    get_payment_status,
+    public_base_url,
+)
 from app.email_service import send_order_email, smtp_ready
 
-from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
+from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -22,9 +33,11 @@ DATABASE_URL = os.getenv(
     "DATABASE_URL",
     "postgresql+psycopg://postgres:postgres@localhost:5433/adam_delivery",
 )
-SESSION_SECRET = os.getenv("SESSION_SECRET", "dev-change-me-in-production")
-ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin")
+SESSION_SECRET = (os.getenv("SESSION_SECRET") or "dev-change-me-in-production").strip()
+if not SESSION_SECRET:
+    SESSION_SECRET = "dev-change-me-in-production"
+ADMIN_USERNAME = (os.getenv("ADMIN_USERNAME") or "admin").strip()
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD") or "admin"
 
 YANDEX_MAP_ORG_URL = "https://yandex.ru/maps/org/adam/1084526191?si=n4aate9mbpg97k4ecwxfrp3crm"
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
@@ -46,7 +59,7 @@ def health() -> dict:
     return {"status": "ok"}
 
 
-ORDER_STATUSES = ("new", "cooking", "delivering", "done", "cancelled")
+ORDER_STATUSES = ("pending_payment", "new", "cooking", "delivering", "done", "cancelled")
 
 
 class Base(DeclarativeBase):
@@ -93,6 +106,10 @@ class Order(Base):
     customer_id: Mapped[int | None] = mapped_column(ForeignKey("customers.id"), nullable=True)
     loyalty_points_earned: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     loyalty_points_spent: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    payment_status: Mapped[str] = mapped_column(String(20), default="none", nullable=False)
+    qrc_id: Mapped[str] = mapped_column(String(80), default="", nullable=False)
+    elplat_ebl27: Mapped[str] = mapped_column(String(80), default="", nullable=False)
+    payment_token: Mapped[str] = mapped_column(String(64), default="", nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     items: Mapped[list["OrderItem"]] = relationship(
         back_populates="order",
@@ -192,6 +209,10 @@ def migrate_schema() -> None:
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS loyalty_points_spent INTEGER NOT NULL DEFAULT 0",
         "ALTER TABLE customers ADD COLUMN IF NOT EXISTS loyalty_points INTEGER NOT NULL DEFAULT 0",
         "ALTER TABLE products ALTER COLUMN image_url TYPE VARCHAR(500)",
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) NOT NULL DEFAULT 'none'",
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS qrc_id VARCHAR(80) NOT NULL DEFAULT ''",
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS elplat_ebl27 VARCHAR(80) NOT NULL DEFAULT ''",
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_token VARCHAR(64) NOT NULL DEFAULT ''",
     ]
     with engine.begin() as conn:
         for stmt in stmts:
@@ -230,6 +251,10 @@ def on_startup() -> None:
         print(f"[smtp] enabled {host}:{port} from={mail_from} user={user} tls={use_tls}")
     else:
         print("[smtp] disabled — set SMTP_HOST and SMTP_USER in .env")
+    if elplat_ready():
+        print(f"[elplat] enabled {public_base_url()} -> {elplat_config()['api_url']}")
+    else:
+        print("[elplat] disabled — set ELPLAT_ENABLED=true and credentials in .env")
 
 
 def gallery_photo_urls() -> list[str]:
@@ -240,7 +265,83 @@ def gallery_photo_urls() -> list[str]:
     ]
 
 
+VK_MENU_PATH = Path(__file__).resolve().parents[1] / "data" / "vk_menu.json"
+
+
+def _upgrade_vk_image_url(url: str) -> str:
+    if "size=0x400" in url:
+        return url.replace("size=0x400", "size=604x604")
+    return url
+
+
+def _is_real_vk_product(raw: dict) -> bool:
+    vk_id = raw.get("vk_id") or 0
+    try:
+        price = Decimal(str(raw.get("price") or "0"))
+    except Exception:
+        return False
+    return vk_id > 1_000_000 and price > 0 and bool(raw.get("image_url"))
+
+
+def load_vk_menu_items() -> list[dict]:
+    if not VK_MENU_PATH.is_file():
+        return []
+    data = json.loads(VK_MENU_PATH.read_text(encoding="utf-8"))
+    items = []
+    for raw in data:
+        if not _is_real_vk_product(raw):
+            continue
+        items.append(
+            {
+                "name": raw["name"].strip(),
+                "description": (raw.get("description") or raw["name"]).strip()[:2000],
+                "price": Decimal(str(raw["price"])),
+                "category": (raw.get("category") or "Меню").strip() or "Меню",
+                "image_url": _upgrade_vk_image_url(raw["image_url"]),
+                "is_active": True,
+            }
+        )
+    return items
+
+
+def import_vk_products(session: Session) -> int:
+    menu_items = load_vk_menu_items()
+    if not menu_items:
+        return 0
+
+    by_name = {p.name: p for p in session.scalars(select(Product)).all()}
+    vk_names = {item["name"] for item in menu_items}
+    changed = 0
+
+    for item in menu_items:
+        product = by_name.get(item["name"])
+        if product is None:
+            session.add(Product(**item))
+            changed += 1
+            continue
+        product.description = item["description"]
+        product.price = item["price"]
+        product.category = item["category"]
+        product.image_url = item["image_url"]
+        product.is_active = True
+        changed += 1
+
+    for product in by_name.values():
+        if product.name not in vk_names and product.is_active:
+            product.is_active = False
+            changed += 1
+
+    return changed
+
+
 def seed_products() -> None:
+    vk_items = load_vk_menu_items()
+    if vk_items:
+        with startup_session() as session:
+            count = import_vk_products(session)
+        print(f"[vk-menu] synced {len(vk_items)} items ({count} db changes)")
+        return
+
     photos = gallery_photo_urls()
     menu_items = [
         {
@@ -366,14 +467,20 @@ def normalize_phone(phone: str) -> str:
     return "".join(char for char in phone.strip() if char.isdigit() or char == "+")
 
 
-def verify_admin(username: str, password: str) -> bool:
-    if not secrets.compare_digest(username.strip(), ADMIN_USERNAME.strip()):
+def _safe_compare_str(provided: str, expected: str) -> bool:
+    a = provided.strip()
+    b = expected.strip()
+    if len(a) != len(b):
         return False
-    return secrets.compare_digest(password, ADMIN_PASSWORD)
+    return secrets.compare_digest(a, b)
+
+
+def verify_admin(username: str, password: str) -> bool:
+    return _safe_compare_str(username, ADMIN_USERNAME) and _safe_compare_str(password, ADMIN_PASSWORD)
 
 
 def require_admin(request: Request) -> None:
-    if not request.session.get("admin"):
+    if not is_admin(request):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Требуется вход администратора")
 
 
@@ -403,6 +510,15 @@ def storefront_checkout(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(request, "checkout.html", {})
 
 
+@app.get("/pay/{order_id}", response_class=HTMLResponse)
+def payment_page(request: Request, order_id: int, t: str = "") -> HTMLResponse:
+    return templates.TemplateResponse(
+        request,
+        "pay.html",
+        {"order_id": order_id, "payment_token": t, "elplat_enabled": elplat_ready()},
+    )
+
+
 @app.get("/login", response_class=HTMLResponse)
 def page_login(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(request, "login.html", {})
@@ -426,12 +542,15 @@ def page_about(request: Request) -> HTMLResponse:
 @app.get("/api/store/settings")
 def store_settings(db: Db) -> dict:
     settings = get_app_settings(db)
-    return {"min_order_amount": float(settings.min_order_amount)}
+    return {
+        "min_order_amount": float(settings.min_order_amount),
+        "payment_enabled": elplat_ready(),
+    }
 
 
 @app.get("/admin/login", response_model=None)
 def admin_login_page(request: Request) -> HTMLResponse:
-    if request.session.get("admin"):
+    if is_admin(request):
         return RedirectResponse("/admin", status_code=302)
     return templates.TemplateResponse(request, "admin_login.html", {"error": None})
 
@@ -449,19 +568,31 @@ def admin_login_submit(
             {"error": "Неверный логин или пароль"},
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
-    request.session["admin"] = True
-    return RedirectResponse(url="/admin", status_code=303)
+    try:
+        response = RedirectResponse(url="/admin", status_code=302)
+        set_admin(response)
+        return response
+    except Exception as exc:
+        print(f"[admin] login cookie failed: {exc}")
+        return templates.TemplateResponse(
+            request,
+            "admin_login.html",
+            {"error": "Ошибка входа на сервере. Проверьте SESSION_SECRET в .env и перезапустите приложение."},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 @app.get("/admin/logout")
 def admin_logout(request: Request) -> RedirectResponse:
     request.session.pop("admin", None)
-    return RedirectResponse(url="/admin/login", status_code=302)
+    response = RedirectResponse(url="/admin/login", status_code=302)
+    clear_admin(response)
+    return response
 
 
 @app.get("/admin", response_model=None)
 def admin_panel(request: Request) -> HTMLResponse | RedirectResponse:
-    if not request.session.get("admin"):
+    if not is_admin(request):
         return RedirectResponse(url="/admin/login", status_code=302)
     return templates.TemplateResponse(request, "admin.html", {"statuses": ORDER_STATUSES})
 
@@ -623,6 +754,7 @@ def create_order(payload: OrderCreate, request: Request, db: Db) -> dict:
     if customer is not None:
         loyalty_earned = loyalty_points_for_total(final_total)
 
+    needs_payment = elplat_ready() and final_total > 0
     order = Order(
         customer_name=payload.customer_name.strip(),
         phone=normalize_phone(payload.phone),
@@ -634,12 +766,15 @@ def create_order(payload: OrderCreate, request: Request, db: Db) -> dict:
         customer_id=customer.id if customer else None,
         loyalty_points_earned=loyalty_earned,
         loyalty_points_spent=points_to_spend,
+        status="pending_payment" if needs_payment else "new",
+        payment_status="pending" if needs_payment else "none",
+        payment_token=secrets.token_urlsafe(24) if needs_payment else "",
     )
     db.add(order)
     db.commit()
     db.refresh(order)
 
-    if customer is not None:
+    if customer is not None and not needs_payment:
         if points_to_spend > 0:
             customer.loyalty_points -= points_to_spend
         if loyalty_earned > 0:
@@ -647,19 +782,168 @@ def create_order(payload: OrderCreate, request: Request, db: Db) -> dict:
         db.commit()
 
     order = db.scalars(select(Order).options(selectinload(Order.items)).where(Order.id == order.id)).one()
-    try:
-        send_order_email(order, kind="created")
-    except Exception as exc:
-        print(f"[order] email after create failed for #{order.id}: {exc}")
 
-    return {
+    if not needs_payment:
+        try:
+            send_order_email(order, kind="created")
+        except Exception as exc:
+            print(f"[order] email after create failed for #{order.id}: {exc}")
+
+    result = {
         "id": order.id,
         "status": order.status,
         "total": float(order.total),
         "subtotal": float(total),
-        "loyalty_points_earned": loyalty_earned,
+        "loyalty_points_earned": loyalty_earned if not needs_payment else 0,
         "loyalty_points_spent": points_to_spend,
+        "payment_required": needs_payment,
     }
+    if needs_payment:
+        result["payment_url"] = f"/pay/{order.id}?t={order.payment_token}"
+    return result
+
+
+def get_order_by_payment_token(db: Session, order_id: int, token: str) -> Order:
+    order = db.scalars(
+        select(Order).options(selectinload(Order.items)).where(Order.id == order_id)
+    ).first()
+    if order is None or not order.payment_token or not secrets.compare_digest(order.payment_token, token):
+        raise HTTPException(status_code=404, detail="Заказ не найден")
+    return order
+
+
+def finalize_paid_order(db: Session, order: Order, *, ebl27: str = "", qrc_id: str = "") -> Order:
+    if order.payment_status == "paid":
+        return order
+
+    order.payment_status = "paid"
+    order.status = "new"
+    if ebl27:
+        order.elplat_ebl27 = ebl27
+    if qrc_id:
+        order.qrc_id = qrc_id
+
+    customer = db.get(Customer, order.customer_id) if order.customer_id else None
+    if customer is not None:
+        if order.loyalty_points_spent > 0:
+            customer.loyalty_points -= order.loyalty_points_spent
+        if order.loyalty_points_earned > 0:
+            customer.loyalty_points += order.loyalty_points_earned
+
+    db.commit()
+    order = db.scalars(select(Order).options(selectinload(Order.items)).where(Order.id == order.id)).one()
+    try:
+        send_order_email(order, kind="created")
+    except Exception as exc:
+        print(f"[order] email after payment failed for #{order.id}: {exc}")
+    return order
+
+
+@app.get("/api/orders/{order_id}/payment/info")
+def order_payment_info(order_id: int, db: Db, token: str = Query()) -> dict:
+    order = get_order_by_payment_token(db, order_id, token)
+    return {
+        "order_id": order.id,
+        "total": float(order.total),
+        "payment_status": order.payment_status,
+        "customer_name": order.customer_name,
+    }
+
+
+@app.post("/api/orders/{order_id}/payment/qr")
+async def create_order_payment_qr(order_id: int, db: Db, token: str = Query()) -> dict:
+    order = get_order_by_payment_token(db, order_id, token)
+    if order.payment_status == "paid":
+        return {"paid": True, "qr_data": ""}
+
+    if not elplat_ready():
+        raise HTTPException(status_code=503, detail="Оплата СБП временно недоступна")
+
+    callback_url = f"{public_base_url()}/api/payments/elplat/callback?order_id={order.id}"
+    redirect_url = f"{public_base_url()}/pay/{order.id}?t={order.payment_token}&done=1"
+    purpose = f"Заказ {order.id} Кафе Адам"
+    try:
+        info = await create_dynamic_qr(
+            amount_rub=order.total,
+            payment_purpose=purpose,
+            callback_url=callback_url,
+            redirect_url=redirect_url,
+            email=order.customer_email or "",
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    order.qrc_id = info.get("qrcId") or ""
+    db.commit()
+    return {
+        "paid": False,
+        "qr_data": info.get("qrData") or "",
+        "qrc_id": order.qrc_id,
+        "amount": float(order.total),
+    }
+
+
+@app.get("/api/orders/{order_id}/payment/status")
+async def order_payment_status(order_id: int, db: Db, token: str = Query()) -> dict:
+    order = get_order_by_payment_token(db, order_id, token)
+    if order.payment_status == "paid":
+        return {"status": "paid", "order_status": order.status}
+
+    if order.qrc_id and elplat_ready():
+        try:
+            info = await get_payment_status(order.qrc_id)
+            if info.get("trxStatus") == "ACWP":
+                order = finalize_paid_order(
+                    db,
+                    order,
+                    ebl27=info.get("ebl27") or "",
+                    qrc_id=order.qrc_id,
+                )
+                return {"status": "paid", "order_status": order.status}
+        except Exception as exc:
+            print(f"[elplat] getPay order #{order_id}: {exc}")
+
+    return {"status": order.payment_status, "order_status": order.status}
+
+
+@app.post("/api/payments/elplat/callback")
+async def elplat_payment_callback(request: Request, order_id: int, db: Db) -> dict:
+    client_host = request.client.host if request.client else None
+    if not callback_ip_allowed(client_host):
+        print(f"[elplat] callback rejected from {client_host}")
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+
+    if body.get("payStatus") != 1:
+        return {"status": True}
+
+    order = db.scalars(
+        select(Order).options(selectinload(Order.items)).where(Order.id == order_id)
+    ).first()
+    if order is None:
+        return {"status": True}
+
+    callback_amount = body.get("allAmount") or body.get("amount")
+    if callback_amount is not None:
+        expected_kop = int((order.total * 100).quantize(Decimal("1")))
+        try:
+            if int(callback_amount) != expected_kop:
+                print(f"[elplat] amount mismatch order #{order_id}: {callback_amount} vs {expected_kop}")
+                return {"status": True}
+        except (TypeError, ValueError):
+            pass
+
+    finalize_paid_order(
+        db,
+        order,
+        ebl27=str(body.get("ebl27") or ""),
+        qrc_id=str(body.get("qrcId") or ""),
+    )
+    return {"status": True}
 
 
 @app.get("/api/admin/orders")
@@ -706,6 +990,7 @@ def serialize_order(order: Order) -> dict:
         "address": order.address,
         "comment": order.comment,
         "status": order.status,
+        "payment_status": order.payment_status,
         "total": float(order.total),
         "loyalty_points_spent": order.loyalty_points_spent,
         "loyalty_points_earned": order.loyalty_points_earned,

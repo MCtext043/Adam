@@ -72,6 +72,7 @@ def resolve_sender() -> tuple[str, str, str, str, int, bool]:
 
 
 ORDER_STATUS_LABELS = {
+    "pending_payment": "Ожидает оплату",
     "new": "Новый",
     "cooking": "Готовится",
     "delivering": "В доставке",

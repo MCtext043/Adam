@@ -1602,3 +1602,110 @@ main {
 .admin-settings-form input {
   width: 160px;
 }
+
+/* --- SBP / Elplat payment page --- */
+.pay-body {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background: var(--beige, #f5efe6);
+}
+
+.pay-card {
+  width: min(480px, 100%);
+  padding: 28px 24px 32px;
+  border-radius: 28px;
+  background: var(--white, #fff);
+  border: 1px solid rgba(32, 25, 21, 0.1);
+  box-shadow: var(--shadow, 0 12px 40px rgba(32, 25, 21, 0.08));
+  text-align: center;
+}
+
+.pay-title {
+  margin: 12px 0 4px;
+  font-size: 1.5rem;
+}
+
+.pay-order-id {
+  margin: 0 0 8px;
+  opacity: 0.75;
+}
+
+.pay-amount {
+  margin: 0 0 20px;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.pay-loading {
+  padding: 24px;
+  opacity: 0.7;
+}
+
+.pay-qr-block {
+  display: grid;
+  gap: 16px;
+}
+
+.pay-qr-wrap {
+  position: relative;
+  display: inline-block;
+  margin: 0 auto;
+  padding: 12px;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(32, 25, 21, 0.08);
+}
+
+.pay-qr-canvas {
+  min-width: 300px;
+  min-height: 300px;
+}
+
+.pay-sbp-logo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 8px;
+  padding: 4px;
+  pointer-events: none;
+}
+
+.pay-hint,
+.pay-legal {
+  font-size: 0.9rem;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.pay-sbp-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  background-color: #1d1346 !important;
+  color: #d0cfd8 !important;
+  border: none;
+}
+
+.checkout-payment-hint {
+  margin: 12px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: rgba(32, 25, 21, 0.72);
+}
+
+.pay-success-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: #2e7d32;
+  color: #fff;
+  font-size: 2.5rem;
+  line-height: 72px;
+}

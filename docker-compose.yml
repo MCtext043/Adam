@@ -41,6 +41,15 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_FROM: ${SMTP_FROM:-}
       SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Кафе Адам}
+      SESSION_SECRET: ${SESSION_SECRET:-dev-change-me-in-production}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8010}
+      ELPLAT_ENABLED: ${ELPLAT_ENABLED:-false}
+      ELPLAT_API_URL: ${ELPLAT_API_URL:-http://sbpekvtest.el-plat.ru}
+      ELPLAT_LOGIN: ${ELPLAT_LOGIN:-}
+      ELPLAT_PASSWORD: ${ELPLAT_PASSWORD:-}
+      ELPLAT_ORG_ID: ${ELPLAT_ORG_ID:-}
     depends_on:
       postgres:
         condition: service_healthy
