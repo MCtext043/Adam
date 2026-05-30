@@ -6,19 +6,40 @@ import sys
 from decimal import Decimal
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+
+def load_env_file() -> None:
+    env_path = ROOT / ".env"
+    if not env_path.is_file():
+        return
+    for line in env_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+load_env_file()
 
 from app.elplat import create_dynamic_qr, elplat_config, elplat_ready, public_base_url
 
 
 async def main() -> None:
     if not elplat_ready():
-        print("FAIL: задайте в .env:")
+        print("FAIL: задайте в .env (в корне проекта):")
         print("  ELPLAT_ENABLED=true")
         print("  ELPLAT_LOGIN=...")
         print("  ELPLAT_PASSWORD=...")
         print("  ELPLAT_ORG_ID=...")
         print("  PUBLIC_BASE_URL=http://kafeadam.ru")
+        print("")
+        print("Затем: pip install -r requirements.txt")
         sys.exit(1)
 
     cfg = elplat_config()
@@ -41,7 +62,6 @@ async def main() -> None:
     print("OK: QR создан")
     print(f"  qrcId: {info.get('qrcId')}")
     print(f"  qrData: {info.get('qrData')}")
-    print("После теста включите ELPLAT на сервере и задеплойте.")
 
 
 if __name__ == "__main__":

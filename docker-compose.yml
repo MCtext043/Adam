@@ -50,6 +50,8 @@ services:
       ELPLAT_LOGIN: ${ELPLAT_LOGIN:-}
       ELPLAT_PASSWORD: ${ELPLAT_PASSWORD:-}
       ELPLAT_ORG_ID: ${ELPLAT_ORG_ID:-}
+    volumes:
+      - ./data:/srv/data:ro
     depends_on:
       postgres:
         condition: service_healthy

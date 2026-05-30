@@ -65,11 +65,34 @@ if ss -tlnp 2>/dev/null | grep ':80 ' | grep -q nginx; then
 fi
 
 docker compose --profile app down 2>/dev/null || true
-docker compose --profile app up -d --build --force-recreate
+
+echo "=== Docker: clear stale build cache (fixes 'parent snapshot does not exist') ==="
+docker builder prune -af 2>/dev/null || true
+docker buildx prune -af 2>/dev/null || true
+
+echo "=== Docker build & start ==="
+if ! docker compose --profile app up -d --build --force-recreate; then
+  echo "Build failed — retrying with --no-cache..."
+  docker builder prune -af 2>/dev/null || true
+  docker buildx prune -af 2>/dev/null || true
+  docker compose --profile app build --no-cache
+  docker compose --profile app up -d --force-recreate
+fi
 docker compose ps
 
 echo "=== SMTP inside container (no password) ==="
 docker exec adam-web python -c 'from app.email_service import smtp_ready, resolve_sender; h,u,p,f,pt,tls=resolve_sender(); print("smtp_ready=", smtp_ready()); print("host=", h); print("user=", u or "EMPTY"); print("from=", f); print("port=", pt, "tls=", tls); print("password_set=", bool(p))' || true
+
+echo "=== Menu from data/vk_menu.json ==="
+docker exec adam-web python -c '
+from pathlib import Path
+from app.main import VK_MENU_PATH, load_vk_menu_items, startup_session, import_vk_products
+print("menu_file_exists=", Path(VK_MENU_PATH).is_file())
+items = load_vk_menu_items()
+print("menu_items=", len(items))
+with startup_session() as session:
+    print("menu_sync_changes=", import_vk_products(session))
+' || true
 
 APP_PORT=80
 echo "Site URL: http://kafeadam.ru (port 80)"

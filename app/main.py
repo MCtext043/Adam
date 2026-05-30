@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Annotated, Generator
 
 from app.admin_auth import clear_admin, is_admin, set_admin
+from app.menu_categories import categorize_menu_item
 from app.elplat import (
     callback_ip_allowed,
     create_dynamic_qr,
@@ -275,12 +276,18 @@ def _upgrade_vk_image_url(url: str) -> str:
 
 
 def _is_real_vk_product(raw: dict) -> bool:
-    vk_id = raw.get("vk_id") or 0
+    if not (raw.get("name") or "").strip():
+        return False
     try:
         price = Decimal(str(raw.get("price") or "0"))
     except Exception:
         return False
-    return vk_id > 1_000_000 and price > 0 and bool(raw.get("image_url"))
+    if price <= 0 or not raw.get("image_url"):
+        return False
+    vk_id = raw.get("vk_id") or 0
+    if vk_id and vk_id <= 1_000_000:
+        return False
+    return True
 
 
 def load_vk_menu_items() -> list[dict]:
@@ -291,12 +298,17 @@ def load_vk_menu_items() -> list[dict]:
     for raw in data:
         if not _is_real_vk_product(raw):
             continue
+        name = raw["name"].strip()
+        description = (raw.get("description") or name).strip()[:2000]
+        category = (raw.get("category") or "").strip()
+        if category in ("", "Меню"):
+            category = categorize_menu_item(name, description)
         items.append(
             {
-                "name": raw["name"].strip(),
-                "description": (raw.get("description") or raw["name"]).strip()[:2000],
+                "name": name,
+                "description": description,
                 "price": Decimal(str(raw["price"])),
-                "category": (raw.get("category") or "Меню").strip() or "Меню",
+                "category": category,
                 "image_url": _upgrade_vk_image_url(raw["image_url"]),
                 "is_active": True,
             }
@@ -335,117 +347,18 @@ def import_vk_products(session: Session) -> int:
 
 
 def seed_products() -> None:
-    vk_items = load_vk_menu_items()
-    if vk_items:
-        with startup_session() as session:
-            count = import_vk_products(session)
-        print(f"[vk-menu] synced {len(vk_items)} items ({count} db changes)")
+    if not VK_MENU_PATH.is_file():
+        print(f"[vk-menu] ERROR: missing {VK_MENU_PATH} — menu not loaded")
         return
 
-    photos = gallery_photo_urls()
-    menu_items = [
-        {
-            "name": "Шашлык из курицы",
-            "description": "Сочный куриный шашлык с легкой пряной корочкой, луком и зеленью.",
-            "price": Decimal("420.00"),
-            "category": "Горячее",
-        },
-        {
-            "name": "Люля-кебаб",
-            "description": "Классический люля из рубленого мяса, приготовленный на мангале.",
-            "price": Decimal("520.00"),
-            "category": "Горячее",
-        },
-        {
-            "name": "Долма в виноградных листьях",
-            "description": "Нежная долма с мясной начинкой, рисом и пряными травами.",
-            "price": Decimal("470.00"),
-            "category": "Горячее",
-        },
-        {
-            "name": "Овощи на мангале",
-            "description": "Баклажан, перец, томаты и шампиньоны с ароматом углей.",
-            "price": Decimal("360.00"),
-            "category": "Горячее",
-        },
-        {
-            "name": "Адам сет",
-            "description": "Большое ассорти для компании: шашлык, люля, овощи гриль и соусы.",
-            "price": Decimal("1850.00"),
-            "category": "Сеты",
-        },
-        {
-            "name": "Семейный сет",
-            "description": "Горячие блюда, салат, выпечка и напитки для семейного ужина.",
-            "price": Decimal("2450.00"),
-            "category": "Сеты",
-        },
-        {
-            "name": "Сет к чаю",
-            "description": "Сладкая выпечка, пахлава и домашний чай для уютного вечера.",
-            "price": Decimal("980.00"),
-            "category": "Сеты",
-        },
-        {
-            "name": "Хачапури по-аджарски",
-            "description": "Лодка с сыром сулугуни, сливочным маслом и желтком.",
-            "price": Decimal("460.00"),
-            "category": "Выпечка",
-        },
-        {
-            "name": "Кутабы с зеленью",
-            "description": "Тонкие лепешки с зеленью и сыром, подаются со сливочным маслом.",
-            "price": Decimal("310.00"),
-            "category": "Выпечка",
-        },
-        {
-            "name": "Лаваш из тандыра",
-            "description": "Свежий горячий лаваш к шашлыку, салатам и соусам.",
-            "price": Decimal("90.00"),
-            "category": "Выпечка",
-        },
-        {
-            "name": "Салат с гранатом",
-            "description": "Свежие овощи, зелень, гранат и фирменная заправка кафе «Адам».",
-            "price": Decimal("390.00"),
-            "category": "Салаты",
-        },
-        {
-            "name": "Греческий салат",
-            "description": "Овощи, сыр, маслины и оливковое масло в классическом сочетании.",
-            "price": Decimal("360.00"),
-            "category": "Салаты",
-        },
-        {
-            "name": "Салат Адам",
-            "description": "Курица, свежие овощи, зелень и легкий ореховый соус.",
-            "price": Decimal("430.00"),
-            "category": "Салаты",
-        },
-        {
-            "name": "Домашний морс",
-            "description": "Охлажденный ягодный морс собственного приготовления.",
-            "price": Decimal("180.00"),
-            "category": "Напитки",
-        },
-        {
-            "name": "Айран",
-            "description": "Кисломолочный напиток, который отлично подходит к блюдам на мангале.",
-            "price": Decimal("160.00"),
-            "category": "Напитки",
-        },
-        {
-            "name": "Чай с чабрецом",
-            "description": "Ароматный черный чай с чабрецом и восточными сладостями.",
-            "price": Decimal("220.00"),
-            "category": "Напитки",
-        },
-    ]
-    for i, item in enumerate(menu_items):
-        item["image_url"] = photos[i % len(photos)]
+    vk_items = load_vk_menu_items()
+    if not vk_items:
+        print(f"[vk-menu] ERROR: no valid items in {VK_MENU_PATH}")
+        return
+
     with startup_session() as session:
-        existing_names = set(session.scalars(select(Product.name)).all())
-        session.add_all([Product(**item) for item in menu_items if item["name"] not in existing_names])
+        count = import_vk_products(session)
+    print(f"[vk-menu] synced {len(vk_items)} items from {VK_MENU_PATH.name} ({count} db changes)")
 
 
 def seed_app_settings() -> None:
