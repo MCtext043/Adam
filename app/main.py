@@ -8,7 +8,7 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Annotated, Generator
 
-from app.admin_auth import clear_admin, is_admin, set_admin
+from app.admin_auth import clear_admin, cookie_secure, is_admin, set_admin
 from app.menu_categories import categorize_menu_item
 from app.elplat import (
     callback_ip_allowed,
@@ -29,6 +29,7 @@ from pydantic import BaseModel, EmailStr, Field, field_validator
 from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, Text, create_engine, func, select, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship, selectinload, sessionmaker
 from starlette.middleware.sessions import SessionMiddleware
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 
 DATABASE_URL = os.getenv(
@@ -48,7 +49,8 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 app = FastAPI(title="Adam Cafe Delivery")
-app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET, https_only=False, same_site="lax")
+app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET, https_only=cookie_secure(), same_site="lax")
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 templates.env.globals["yandex_map_org_url"] = YANDEX_MAP_ORG_URL
@@ -484,7 +486,7 @@ def admin_login_submit(
         )
     try:
         response = RedirectResponse(url="/admin", status_code=302)
-        set_admin(response)
+        set_admin(response, request)
         return response
     except Exception as exc:
         print(f"[admin] login cookie failed: {exc}")
@@ -500,7 +502,7 @@ def admin_login_submit(
 def admin_logout(request: Request) -> RedirectResponse:
     request.session.pop("admin", None)
     response = RedirectResponse(url="/admin/login", status_code=302)
-    clear_admin(response)
+    clear_admin(response, request)
     return response
 
 

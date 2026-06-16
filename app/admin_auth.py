@@ -20,6 +20,20 @@ def _serializer() -> URLSafeTimedSerializer:
     return URLSafeTimedSerializer(_secret(), salt="adam-admin-v1")
 
 
+def cookie_secure() -> bool:
+    if os.getenv("SESSION_COOKIE_SECURE", "").lower() in ("1", "true", "yes"):
+        return True
+    pub = (os.getenv("PUBLIC_BASE_URL") or "").strip().lower()
+    return pub.startswith("https://")
+
+
+def request_is_https(request: Request) -> bool:
+    forwarded = (request.headers.get("x-forwarded-proto") or "").split(",")[0].strip().lower()
+    if forwarded:
+        return forwarded == "https"
+    return request.url.scheme == "https"
+
+
 def is_admin(request: Request) -> bool:
     token = request.cookies.get(ADMIN_COOKIE)
     if not token:
@@ -31,9 +45,9 @@ def is_admin(request: Request) -> bool:
         return False
 
 
-def set_admin(response: Response) -> None:
+def set_admin(response: Response, request: Request) -> None:
     token = _serializer().dumps({"ok": True})
-    secure = os.getenv("SESSION_COOKIE_SECURE", "").lower() in ("1", "true", "yes")
+    secure = request_is_https(request)
     response.set_cookie(
         ADMIN_COOKIE,
         token,
@@ -45,5 +59,5 @@ def set_admin(response: Response) -> None:
     )
 
 
-def clear_admin(response: Response) -> None:
-    response.delete_cookie(ADMIN_COOKIE, path="/")
+def clear_admin(response: Response, request: Request) -> None:
+    response.delete_cookie(ADMIN_COOKIE, path="/", secure=request_is_https(request))

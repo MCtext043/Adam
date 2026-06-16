@@ -63,7 +63,7 @@
 
    ```bash
    rsync -avz --exclude '.venv' --exclude '.git' --exclude '__pycache__' \
-     ./ root@45.11.26.79:/opt/adam-delivery/
+     ./ root@45.143.92.217:/opt/adam-delivery/
    ```
 
    Или `git clone` в `/opt/adam-delivery`, если репозиторий уже на GitHub/GitLab.
@@ -80,7 +80,7 @@
 
    Шаблон `.env`: сайт на порту **8010**, PostgreSQL с хоста только через **127.0.0.1:8009** (не торчит в интернет).
 
-4. Откройте в браузере: `http://45.11.26.79:8010` и `http://45.11.26.79:8010/admin`.
+4. Откройте в браузере: `http://45.143.92.217` (или `https://kafeadam.ru` после DNS) и `/admin`.
 
 5. Фаервол (если включён `ufw`): `ufw allow 8010/tcp` и `ufw reload`.
 

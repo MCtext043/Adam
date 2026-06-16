@@ -1,5 +1,5 @@
 param(
-    [string]$Server = "45.11.26.79",
+    [string]$Server = "45.143.92.217",
     [string]$User = "root",
     [string]$RemoteDir = "/opt/adam-delivery"
 )
@@ -41,6 +41,7 @@ try {
         "ADMIN_USERNAME",
         "ADMIN_PASSWORD",
         "PUBLIC_BASE_URL",
+        "CERTBOT_EMAIL",
         "ELPLAT_ENABLED",
         "ELPLAT_API_URL",
         "ELPLAT_LOGIN",
@@ -124,11 +125,24 @@ try {
         }
     }
     if ($envLines -notmatch "PUBLIC_BASE_URL=") {
-        $envLines += "PUBLIC_BASE_URL=http://kafeadam.ru"
+        $envLines += "PUBLIC_BASE_URL=https://kafeadam.ru"
+    }
+    if ($envLines -notmatch "APP_PORT_MAPPING=") {
+        $envLines += "APP_PORT_MAPPING=127.0.0.1:8010:8000"
+    }
+    if ($envLines -notmatch "SESSION_COOKIE_SECURE=") {
+        $envLines += "SESSION_COOKIE_SECURE=true"
     }
 
     # Docker Compose expects env files without BOM and with Unix line endings.
     [System.IO.File]::WriteAllText($smtpEnv, (($envLines -join "`n") + "`n"), $utf8NoBom)
+
+    Get-ChildItem -Path (Join-Path $repoRoot "deploy") -Recurse -Include *.sh,*.conf | ForEach-Object {
+        $text = [System.IO.File]::ReadAllText($_.FullName)
+        if ($text -match "`r") {
+            [System.IO.File]::WriteAllText($_.FullName, ($text -replace "`r`n", "`n" -replace "`r", "`n"), $utf8NoBom)
+        }
+    }
 
     tar -czf $archive `
         --exclude="./.git" `
