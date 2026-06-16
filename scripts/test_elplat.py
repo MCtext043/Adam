@@ -45,8 +45,10 @@ async def main() -> None:
     cfg = elplat_config()
     callback = f"{public_base_url()}/api/payments/elplat/callback?order_id=0"
     print(f"API: {cfg['api_url']}")
-    print(f"Login: {cfg['login']}, orgId: {cfg['org_id']}")
+    print(f"Login: {cfg['login']}, orgId: {cfg['org_id']}, passwd length: {len(cfg['password'])}")
     print(f"Callback: {callback}")
+    if cfg["api_url"].startswith("http://sbpekvtest") and cfg["login"] != "evolenta":
+        print("NOTE: тестовый шлюз — для боевых ключей нужен https://sbpekv.el-plat.ru")
 
     try:
         info = await create_dynamic_qr(

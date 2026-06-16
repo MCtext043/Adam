@@ -20,11 +20,14 @@ def elplat_enabled() -> bool:
 
 
 def elplat_config() -> dict[str, str]:
+    def _clean(value: str) -> str:
+        return value.strip().strip('"').strip("'").replace("\r", "")
+
     return {
-        "api_url": (os.getenv("ELPLAT_API_URL") or "http://sbpekvtest.el-plat.ru").rstrip("/"),
-        "login": os.getenv("ELPLAT_LOGIN", "").strip(),
-        "password": os.getenv("ELPLAT_PASSWORD", "").strip(),
-        "org_id": os.getenv("ELPLAT_ORG_ID", "").strip(),
+        "api_url": (_clean(os.getenv("ELPLAT_API_URL") or "http://sbpekvtest.el-plat.ru")).rstrip("/"),
+        "login": _clean(os.getenv("ELPLAT_LOGIN", "")),
+        "password": _clean(os.getenv("ELPLAT_PASSWORD", "")),
+        "org_id": _clean(os.getenv("ELPLAT_ORG_ID", "")),
     }
 
 
@@ -153,7 +156,14 @@ async def create_dynamic_qr(
     data = await api_request(body)
     info = (data.get("info") or {}) if isinstance(data, dict) else {}
     if not info.get("status"):
-        raise RuntimeError(info.get("descr") or "ЭЛПЛАТ: не удалось создать QR")
+        descr = str(info.get("descr") or "ЭЛПЛАТ: не удалось создать QR")
+        if "hashId" in descr:
+            raise RuntimeError(
+                f"{descr}. Проверьте ELPLAT_LOGIN, ELPLAT_PASSWORD (API passwd из ЛК ЭЛПЛАТ, "
+                f"не пароль от входа на сайт), ELPLAT_ORG_ID и ELPLAT_API_URL "
+                f"(боевой: https://sbpekv.el-plat.ru, тест: http://sbpekvtest.el-plat.ru)."
+            )
+        raise RuntimeError(descr)
     return info
 
 
