@@ -21,7 +21,7 @@ from app.elplat import (
 from app.email_service import send_order_email, smtp_ready
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from passlib.context import CryptContext
@@ -43,6 +43,14 @@ ADMIN_USERNAME = (os.getenv("ADMIN_USERNAME") or "admin").strip()
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD") or "admin"
 
 YANDEX_MAP_ORG_URL = "https://yandex.ru/maps/org/adam/1084526191?si=n4aate9mbpg97k4ecwxfrp3crm"
+SITEMAP_PATHS = ("/", "/about")
+
+
+def site_url() -> str:
+    base = (os.getenv("PUBLIC_BASE_URL") or "https://kafeadam.ru").strip().rstrip("/")
+    if base.startswith("http://") and "localhost" not in base and "127.0.0.1" not in base:
+        return "https://" + base.removeprefix("http://")
+    return base
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
@@ -54,6 +62,62 @@ app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 templates.env.globals["yandex_map_org_url"] = YANDEX_MAP_ORG_URL
+
+templates.env.globals["yandex_map_org_url"] = YANDEX_MAP_ORG_URL
+templates.env.globals["site_url"] = site_url
+
+YANDEX_VERIFICATION_FILE = Path(__file__).resolve().parent / "static" / "yandex_bbc8017699f318d4.html"
+
+
+@app.get("/robots.txt", include_in_schema=False)
+def robots_txt() -> PlainTextResponse:
+    base = site_url()
+    lines = [
+        "User-agent: *",
+        "Allow: /",
+        "Disallow: /admin",
+        "Disallow: /api/",
+        "Disallow: /cart",
+        "Disallow: /checkout",
+        "Disallow: /pay/",
+        "Disallow: /login",
+        "Disallow: /register",
+        "Disallow: /account",
+        "Disallow: /health",
+        "",
+        f"Sitemap: {base}/sitemap.xml",
+    ]
+    return PlainTextResponse("\n".join(lines) + "\n", media_type="text/plain; charset=utf-8")
+
+
+@app.get("/sitemap.xml", include_in_schema=False)
+def sitemap_xml() -> Response:
+    base = site_url()
+    today = datetime.now(ZoneInfo("Europe/Moscow")).date().isoformat()
+    urls = []
+    for path in SITEMAP_PATHS:
+        loc = base if path == "/" else f"{base}{path}"
+        priority = "1.0" if path == "/" else "0.8"
+        urls.append(
+            f"  <url>\n"
+            f"    <loc>{loc}</loc>\n"
+            f"    <lastmod>{today}</lastmod>\n"
+            f"    <changefreq>weekly</changefreq>\n"
+            f"    <priority>{priority}</priority>\n"
+            f"  </url>"
+        )
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + "\n".join(urls)
+        + "\n</urlset>\n"
+    )
+    return Response(content=xml, media_type="application/xml; charset=utf-8")
+
+
+@app.get("/yandex_bbc8017699f318d4.html", include_in_schema=False)
+def yandex_verification() -> FileResponse:
+    return FileResponse(YANDEX_VERIFICATION_FILE, media_type="text/html; charset=utf-8")
 
 
 @app.get("/health")

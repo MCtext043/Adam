@@ -61,9 +61,10 @@ sed -i '/^APP_PORT=/d' .env
 echo 'APP_PORT=8010' >> .env
 sed -i '/^APP_PORT_MAPPING=/d' .env
 echo 'APP_PORT_MAPPING=127.0.0.1:8010:8000' >> .env
-if ! grep -q '^PUBLIC_BASE_URL=https://' .env 2>/dev/null; then
-  sed -i '/^PUBLIC_BASE_URL=/d' .env
-  echo 'PUBLIC_BASE_URL=http://kafeadam.ru' >> .env
+if ! grep -q '^PUBLIC_BASE_URL=' .env 2>/dev/null; then
+  echo 'PUBLIC_BASE_URL=https://kafeadam.ru' >> .env
+elif grep -q '^PUBLIC_BASE_URL=http://kafeadam.ru' .env 2>/dev/null; then
+  sed -i 's|^PUBLIC_BASE_URL=http://kafeadam.ru|PUBLIC_BASE_URL=https://kafeadam.ru|' .env
 fi
 if ! grep -q '^SESSION_COOKIE_SECURE=' .env 2>/dev/null; then
   echo 'SESSION_COOKIE_SECURE=true' >> .env

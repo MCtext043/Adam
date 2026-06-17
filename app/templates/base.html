@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="origin">
+  {% block robots %}{% endblock %}
+  <link rel="canonical" href="{% block canonical %}{{ site_url() }}{% if request.url.path != '/' %}{{ request.url.path }}{% endif %}{% endblock %}">
   <title>{% block title %}Кафе Адам | Доставка{% endblock %}</title>
   <link rel="stylesheet" href="/static/css/styles.css">
 </head>

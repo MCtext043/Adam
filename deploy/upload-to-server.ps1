@@ -125,7 +125,7 @@ try {
         }
     }
     if ($envLines -notmatch "PUBLIC_BASE_URL=") {
-        $envLines += "PUBLIC_BASE_URL=http://kafeadam.ru"
+        $envLines += "PUBLIC_BASE_URL=https://kafeadam.ru"
     }
     if ($envLines -notmatch "APP_PORT_MAPPING=") {
         $envLines += "APP_PORT_MAPPING=127.0.0.1:8010:8000"
