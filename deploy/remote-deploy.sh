@@ -69,6 +69,14 @@ fi
 if ! grep -q '^SESSION_COOKIE_SECURE=' .env 2>/dev/null; then
   echo 'SESSION_COOKIE_SECURE=true' >> .env
 fi
+if ! grep -q '^INDEXNOW_KEY=.' .env 2>/dev/null; then
+  echo "INDEXNOW_KEY=$(openssl rand -hex 16 2>/dev/null || head -c 16 /dev/urandom | xxd -p -c 32)" >> .env
+fi
+if ! grep -q '^APP_TIMEZONE=' .env 2>/dev/null; then
+  echo 'APP_TIMEZONE=Europe/Samara' >> .env
+elif grep -q '^APP_TIMEZONE=Europe/Moscow' .env 2>/dev/null; then
+  sed -i 's|^APP_TIMEZONE=Europe/Moscow|APP_TIMEZONE=Europe/Samara|' .env
+fi
 sed -i 's/\r$//' .env
 
 tar -xzf /tmp/adam-deploy.tar.gz -C "$REMOTE_DIR"

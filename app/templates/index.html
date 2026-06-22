@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% block title %}Кафе Адам Ижевск | Доставка блюд{% endblock %}
+{% block meta_description %}Кафе «Адам» в селе Октябрьский — доставка горячих блюд, выпечки и салатов в Ижевск и Завьяловский район. Заказ онлайн на kafeadam.ru.{% endblock %}
 {% block page %}home{% endblock %}
 {% block content %}
 <section class="hero hero-compact">
@@ -6,12 +8,33 @@
     <section class="hero-copy">
       <p class="eyebrow">Вкус, гостеприимство, традиции</p>
       <h1>Доставка блюд кафе «Адам»</h1>
-      <p>Горячие блюда, сеты, выпечка, салаты и напитки — доставим к вам домой.</p>
+      <p>Горячие блюда, сеты, выпечка, салаты и напитки — доставим к вам домой в Ижевск и окрестности.</p>
       <div class="hero-actions">
         <a class="button button-dark" href="#menu">Выбрать блюда</a>
         <a class="button button-light" href="/cart">Корзина</a>
       </div>
     </section>
+  </div>
+</section>
+
+<section class="local-info" aria-label="Кафе Адам — адрес и доставка">
+  <div class="local-info-inner">
+    <h2>Кафе «Адам» — доставка в Ижевск</h2>
+    <p>
+      Кавказская кухня, мангал и домашняя выпечка в селе Октябрьский, Завьяловский район.
+      Привезём заказ в Ижевск и близлежащие населённые пункты — минимальная сумма и стоимость доставки
+      рассчитываются при оформлении.
+    </p>
+    <address class="local-info-address">
+      <span>{{ cafe_name }}</span><br>
+      село Октябрьский, 41, Удмуртская Республика<br>
+      <a href="{{ cafe_phone_href() }}">{{ cafe_phone_display() }}</a>
+    </address>
+    <p class="local-info-links">
+      <a href="/about">О кафе</a>
+      <span aria-hidden="true">·</span>
+      <a href="{{ yandex_map_org_url }}" target="_blank" rel="noopener noreferrer">Как добраться</a>
+    </p>
   </div>
 </section>
 

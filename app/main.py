@@ -18,7 +18,23 @@ from app.elplat import (
     get_payment_status,
     public_base_url,
 )
+from app.delivery import estimate_delivery
 from app.email_service import send_order_email, smtp_ready
+from app.seo import (
+    CAFE_NAME,
+    CAFE_NAME_PLAIN,
+    breadcrumb_json_ld,
+    cafe_phone,
+    cafe_phone_display,
+    cafe_phone_href,
+    indexnow_key,
+    json_ld_script,
+    local_business_json_ld,
+    og_image_url,
+    ping_indexnow_sync,
+    site_url,
+    yandex_metrika_id,
+)
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request, status
 from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, RedirectResponse, Response
@@ -45,12 +61,6 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD") or "admin"
 YANDEX_MAP_ORG_URL = "https://yandex.ru/maps/org/adam/1084526191?si=n4aate9mbpg97k4ecwxfrp3crm"
 SITEMAP_PATHS = ("/", "/about")
 
-
-def site_url() -> str:
-    base = (os.getenv("PUBLIC_BASE_URL") or "https://kafeadam.ru").strip().rstrip("/")
-    if base.startswith("http://") and "localhost" not in base and "127.0.0.1" not in base:
-        return "https://" + base.removeprefix("http://")
-    return base
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
@@ -62,11 +72,31 @@ app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 templates.env.globals["yandex_map_org_url"] = YANDEX_MAP_ORG_URL
-
-templates.env.globals["yandex_map_org_url"] = YANDEX_MAP_ORG_URL
 templates.env.globals["site_url"] = site_url
+templates.env.globals["cafe_name"] = CAFE_NAME
+templates.env.globals["cafe_name_plain"] = CAFE_NAME_PLAIN
+templates.env.globals["cafe_phone"] = cafe_phone
+templates.env.globals["cafe_phone_display"] = cafe_phone_display
+templates.env.globals["cafe_phone_href"] = cafe_phone_href
+templates.env.globals["yandex_metrika_id"] = yandex_metrika_id
+templates.env.globals["og_image_url"] = og_image_url
+templates.env.globals["local_business_json_ld"] = local_business_json_ld
+templates.env.globals["breadcrumb_json_ld"] = breadcrumb_json_ld
+templates.env.globals["json_ld_script"] = json_ld_script
 
-YANDEX_VERIFICATION_FILE = Path(__file__).resolve().parent / "static" / "yandex_bbc8017699f318d4.html"
+APP_TIMEZONE_DEFAULT = "Europe/Samara"
+FAVICON_FILE = Path(__file__).resolve().parent / "static" / "img" / "favicon.ico"
+SITE_MANIFEST_FILE = Path(__file__).resolve().parent / "static" / "site.webmanifest"
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon() -> FileResponse:
+    return FileResponse(FAVICON_FILE, media_type="image/x-icon")
+
+
+@app.get("/site.webmanifest", include_in_schema=False)
+def site_webmanifest() -> FileResponse:
+    return FileResponse(SITE_MANIFEST_FILE, media_type="application/manifest+json")
 
 
 @app.get("/robots.txt", include_in_schema=False)
@@ -85,6 +115,8 @@ def robots_txt() -> PlainTextResponse:
         "Disallow: /account",
         "Disallow: /health",
         "",
+        f"Host: {base.removeprefix('https://').removeprefix('http://')}",
+        "",
         f"Sitemap: {base}/sitemap.xml",
     ]
     return PlainTextResponse("\n".join(lines) + "\n", media_type="text/plain; charset=utf-8")
@@ -93,7 +125,7 @@ def robots_txt() -> PlainTextResponse:
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap_xml() -> Response:
     base = site_url()
-    today = datetime.now(ZoneInfo("Europe/Moscow")).date().isoformat()
+    today = datetime.now(_app_timezone()).date().isoformat()
     urls = []
     for path in SITEMAP_PATHS:
         loc = base if path == "/" else f"{base}{path}"
@@ -118,6 +150,14 @@ def sitemap_xml() -> Response:
 @app.get("/yandex_bbc8017699f318d4.html", include_in_schema=False)
 def yandex_verification() -> FileResponse:
     return FileResponse(YANDEX_VERIFICATION_FILE, media_type="text/html; charset=utf-8")
+
+
+@app.get("/{key_file}.txt", include_in_schema=False)
+def indexnow_key_file(key_file: str) -> PlainTextResponse:
+    key = indexnow_key()
+    if not key or key_file != key:
+        raise HTTPException(status_code=404, detail="Not found")
+    return PlainTextResponse(key + "\n", media_type="text/plain; charset=utf-8")
 
 
 @app.get("/health")
@@ -171,6 +211,8 @@ class Order(Base):
     comment: Mapped[str] = mapped_column(Text, default="", nullable=False)
     status: Mapped[str] = mapped_column(String(30), default="new", nullable=False)
     total: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    delivery_fee: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("0.00"), nullable=False)
+    delivery_distance_km: Mapped[Decimal] = mapped_column(Numeric(6, 2), default=Decimal("0.00"), nullable=False)
     customer_id: Mapped[int | None] = mapped_column(ForeignKey("customers.id"), nullable=True)
     loyalty_points_earned: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     loyalty_points_spent: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
@@ -191,6 +233,8 @@ class AppSettings(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     min_order_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, default=Decimal("500.00"))
+    free_delivery_threshold: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, default=Decimal("3000.00"))
+    delivery_price_per_km: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, default=Decimal("45.00"))
 
 
 class OrderItem(Base):
@@ -237,6 +281,13 @@ class OrderStatusUpdate(BaseModel):
 
 class AdminSettingsUpdate(BaseModel):
     min_order_amount: float = Field(ge=0, le=1_000_000)
+    free_delivery_threshold: float = Field(ge=0, le=1_000_000)
+    delivery_price_per_km: float = Field(ge=0, le=10_000)
+
+
+class DeliveryEstimateIn(BaseModel):
+    address: str = Field(min_length=8, max_length=500)
+    subtotal: float = Field(ge=0, le=1_000_000)
 
 
 class RegisterIn(BaseModel):
@@ -281,6 +332,10 @@ def migrate_schema() -> None:
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS qrc_id VARCHAR(80) NOT NULL DEFAULT ''",
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS elplat_ebl27 VARCHAR(80) NOT NULL DEFAULT ''",
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_token VARCHAR(64) NOT NULL DEFAULT ''",
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_fee NUMERIC(10, 2) NOT NULL DEFAULT 0",
+        "ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_distance_km NUMERIC(6, 2) NOT NULL DEFAULT 0",
+        "ALTER TABLE app_settings ADD COLUMN IF NOT EXISTS free_delivery_threshold NUMERIC(10, 2) NOT NULL DEFAULT 3000",
+        "ALTER TABLE app_settings ADD COLUMN IF NOT EXISTS delivery_price_per_km NUMERIC(10, 2) NOT NULL DEFAULT 45",
     ]
     with engine.begin() as conn:
         for stmt in stmts:
@@ -323,6 +378,14 @@ def on_startup() -> None:
         print(f"[elplat] enabled {public_base_url()} -> {elplat_config()['api_url']}")
     else:
         print("[elplat] disabled — set ELPLAT_ENABLED=true and credentials in .env")
+    if indexnow_key():
+        try:
+            ping_indexnow_sync()
+            print(f"[seo] IndexNow ping sent for {site_url()}")
+        except Exception as exc:
+            print(f"[seo] IndexNow ping failed: {exc}")
+    else:
+        print("[seo] IndexNow disabled — set INDEXNOW_KEY in .env")
 
 
 def gallery_photo_urls() -> list[str]:
@@ -431,16 +494,37 @@ def seed_products() -> None:
 def seed_app_settings() -> None:
     with startup_session() as session:
         if session.get(AppSettings, 1) is None:
-            session.add(AppSettings(id=1, min_order_amount=Decimal("500.00")))
+            session.add(
+                AppSettings(
+                    id=1,
+                    min_order_amount=Decimal("500.00"),
+                    free_delivery_threshold=Decimal("3000.00"),
+                    delivery_price_per_km=Decimal("45.00"),
+                )
+            )
 
 
 def get_app_settings(db: Session) -> AppSettings:
     settings = db.get(AppSettings, 1)
     if settings is None:
-        settings = AppSettings(id=1, min_order_amount=Decimal("500.00"))
+        settings = AppSettings(
+            id=1,
+            min_order_amount=Decimal("500.00"),
+            free_delivery_threshold=Decimal("3000.00"),
+            delivery_price_per_km=Decimal("45.00"),
+        )
         db.add(settings)
         db.flush()
     return settings
+
+
+def store_settings_payload(settings: AppSettings) -> dict:
+    return {
+        "min_order_amount": float(settings.min_order_amount),
+        "free_delivery_threshold": float(settings.free_delivery_threshold),
+        "delivery_price_per_km": float(settings.delivery_price_per_km),
+        "payment_enabled": elplat_ready(),
+    }
 
 
 def normalize_phone(phone: str) -> str:
@@ -468,6 +552,19 @@ def loyalty_points_for_total(total: Decimal) -> int:
     if total <= 0:
         return 0
     return max(1, int(total * Decimal("0.03")))
+
+
+def order_payment_breakdown(order: Order) -> dict:
+    delivery_fee = float(order.delivery_fee)
+    food_total = float(order.total) - delivery_fee
+    items_subtotal = sum(float(item.price * item.quantity) for item in order.items)
+    return {
+        "items_subtotal": items_subtotal,
+        "food_total": food_total,
+        "delivery_fee": delivery_fee,
+        "total": float(order.total),
+        "loyalty_points_spent": order.loyalty_points_spent,
+    }
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -522,10 +619,22 @@ def page_about(request: Request) -> HTMLResponse:
 @app.get("/api/store/settings")
 def store_settings(db: Db) -> dict:
     settings = get_app_settings(db)
-    return {
-        "min_order_amount": float(settings.min_order_amount),
-        "payment_enabled": elplat_ready(),
-    }
+    return store_settings_payload(settings)
+
+
+@app.post("/api/delivery/estimate")
+async def delivery_estimate(payload: DeliveryEstimateIn, db: Db) -> dict:
+    settings = get_app_settings(db)
+    subtotal = Decimal(str(payload.subtotal)).quantize(Decimal("0.01"))
+    result = await estimate_delivery(
+        payload.address,
+        subtotal,
+        settings.free_delivery_threshold,
+        settings.delivery_price_per_km,
+    )
+    if not result.get("ok"):
+        raise HTTPException(status_code=400, detail=result.get("error") or "Не удалось рассчитать доставку")
+    return result
 
 
 @app.get("/admin/login", response_model=None)
@@ -581,7 +690,9 @@ def admin_panel(request: Request) -> HTMLResponse | RedirectResponse:
 def admin_get_settings(request: Request, db: Db) -> dict:
     require_admin(request)
     settings = get_app_settings(db)
-    return {"min_order_amount": float(settings.min_order_amount)}
+    payload = store_settings_payload(settings)
+    payload.pop("payment_enabled", None)
+    return payload
 
 
 @app.patch("/api/admin/settings")
@@ -589,9 +700,13 @@ def admin_update_settings(payload: AdminSettingsUpdate, request: Request, db: Db
     require_admin(request)
     settings = get_app_settings(db)
     settings.min_order_amount = Decimal(str(payload.min_order_amount))
+    settings.free_delivery_threshold = Decimal(str(payload.free_delivery_threshold))
+    settings.delivery_price_per_km = Decimal(str(payload.delivery_price_per_km))
     db.commit()
     db.refresh(settings)
-    return {"min_order_amount": float(settings.min_order_amount)}
+    result = store_settings_payload(settings)
+    result.pop("payment_enabled", None)
+    return result
 
 
 @app.get("/api/products")
@@ -667,7 +782,7 @@ def auth_logout(request: Request) -> dict:
 
 
 @app.post("/api/orders", status_code=status.HTTP_201_CREATED)
-def create_order(payload: OrderCreate, request: Request, db: Db) -> dict:
+async def create_order(payload: OrderCreate, request: Request, db: Db) -> dict:
     product_ids = [item.product_id for item in payload.items]
     products = db.scalars(select(Product).where(Product.id.in_(product_ids), Product.is_active.is_(True))).all()
     products_by_id = {product.id: product for product in products}
@@ -726,13 +841,26 @@ def create_order(payload: OrderCreate, request: Request, db: Db) -> dict:
         if points_to_spend > max_discount:
             points_to_spend = max_discount
 
-    final_total = total - Decimal(points_to_spend)
-    if final_total < 0:
-        final_total = Decimal("0.00")
+    food_after_loyalty = total - Decimal(points_to_spend)
+    if food_after_loyalty < 0:
+        food_after_loyalty = Decimal("0.00")
+
+    delivery_result = await estimate_delivery(
+        payload.address.strip(),
+        total,
+        settings.free_delivery_threshold,
+        settings.delivery_price_per_km,
+    )
+    if not delivery_result.get("ok"):
+        raise HTTPException(status_code=400, detail=delivery_result.get("error") or "Не удалось рассчитать доставку")
+
+    delivery_fee = Decimal(str(delivery_result["delivery_fee"])).quantize(Decimal("0.01"))
+    delivery_distance_km = Decimal(str(delivery_result["distance_km"])).quantize(Decimal("0.1"))
+    final_total = food_after_loyalty + delivery_fee
 
     loyalty_earned = 0
     if customer is not None:
-        loyalty_earned = loyalty_points_for_total(final_total)
+        loyalty_earned = loyalty_points_for_total(food_after_loyalty)
 
     needs_payment = elplat_ready() and final_total > 0
     order = Order(
@@ -742,6 +870,8 @@ def create_order(payload: OrderCreate, request: Request, db: Db) -> dict:
         address=payload.address.strip(),
         comment=payload.comment.strip(),
         total=final_total,
+        delivery_fee=delivery_fee,
+        delivery_distance_km=delivery_distance_km,
         items=order_items,
         customer_id=customer.id if customer else None,
         loyalty_points_earned=loyalty_earned,
@@ -772,8 +902,8 @@ def create_order(payload: OrderCreate, request: Request, db: Db) -> dict:
     result = {
         "id": order.id,
         "status": order.status,
-        "total": float(order.total),
-        "subtotal": float(total),
+        **order_payment_breakdown(order),
+        "delivery_distance_km": float(order.delivery_distance_km),
         "loyalty_points_earned": loyalty_earned if not needs_payment else 0,
         "loyalty_points_spent": points_to_spend,
         "payment_required": needs_payment,
@@ -824,9 +954,9 @@ def order_payment_info(order_id: int, db: Db, token: str = Query()) -> dict:
     order = get_order_by_payment_token(db, order_id, token)
     return {
         "order_id": order.id,
-        "total": float(order.total),
         "payment_status": order.payment_status,
         "customer_name": order.customer_name,
+        **order_payment_breakdown(order),
     }
 
 
@@ -860,6 +990,7 @@ async def create_order_payment_qr(order_id: int, db: Db, token: str = Query()) -
         "qr_data": info.get("qrData") or "",
         "qrc_id": order.qrc_id,
         "amount": float(order.total),
+        **order_payment_breakdown(order),
     }
 
 
@@ -928,7 +1059,7 @@ async def elplat_payment_callback(request: Request, order_id: int, db: Db) -> di
 
 def _app_timezone() -> ZoneInfo:
     try:
-        return ZoneInfo(os.getenv("APP_TIMEZONE", "Europe/Moscow"))
+        return ZoneInfo(os.getenv("APP_TIMEZONE", APP_TIMEZONE_DEFAULT))
     except Exception:
         return ZoneInfo("UTC")
 
@@ -990,7 +1121,16 @@ def update_order_status(order_id: int, payload: OrderStatusUpdate, request: Requ
     return serialize_order(order)
 
 
+def format_order_datetime(dt: datetime) -> str:
+    if dt is None:
+        return ""
+    tz = _app_timezone()
+    aware = dt if dt.tzinfo is not None else dt.replace(tzinfo=ZoneInfo("UTC"))
+    return aware.astimezone(tz).strftime("%d.%m.%Y %H:%M")
+
+
 def serialize_order(order: Order) -> dict:
+    breakdown = order_payment_breakdown(order)
     return {
         "id": order.id,
         "customer_name": order.customer_name,
@@ -1000,10 +1140,12 @@ def serialize_order(order: Order) -> dict:
         "comment": order.comment,
         "status": order.status,
         "payment_status": order.payment_status,
-        "total": float(order.total),
+        **breakdown,
+        "delivery_distance_km": float(order.delivery_distance_km),
         "loyalty_points_spent": order.loyalty_points_spent,
         "loyalty_points_earned": order.loyalty_points_earned,
-        "created_at": str(order.created_at),
+        "created_at": order.created_at.isoformat(),
+        "created_at_display": format_order_datetime(order.created_at),
         "items": [
             {
                 "product_name": item.product_name,

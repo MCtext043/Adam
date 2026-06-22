@@ -5,11 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="referrer" content="origin">
   {% block robots %}{% endblock %}
-  <link rel="canonical" href="{% block canonical %}{{ site_url() }}{% if request.url.path != '/' %}{{ request.url.path }}{% endif %}{% endblock %}">
+  {% set canonical_url = site_url() + (request.url.path if request.url.path != '/' else '') %}
+  <link rel="canonical" href="{% block canonical %}{{ canonical_url }}{% endblock %}">
+  <meta name="description" content="{% block meta_description %}Кафе «Адам» — доставка горячих блюд, выпечки и салатов в Ижевске и селе Октябрьский. Заказ онлайн.{% endblock %}">
   <title>{% block title %}Кафе Адам | Доставка{% endblock %}</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/img/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:site_name" content="{{ cafe_name_plain }}">
+  <meta property="og:title" content="{{ self.title()|striptags|trim }}">
+  <meta property="og:description" content="{{ self.meta_description()|striptags|trim }}">
+  <meta property="og:url" content="{{ canonical_url }}">
+  <meta property="og:image" content="{{ og_image_url() }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ self.title()|striptags|trim }}">
+  <meta name="twitter:description" content="{{ self.meta_description()|striptags|trim }}">
+  <meta name="twitter:image" content="{{ og_image_url() }}">
   <link rel="stylesheet" href="/static/css/styles.css">
+  {% block seo_page_name %}{% endblock %}
+  {% set seo_page_name = self.seo_page_name()|trim %}
+  <script type="application/ld+json">{{ json_ld_script(local_business_json_ld(page_url=canonical_url, page_name=seo_page_name or none))|safe }}</script>
+  {% block seo_jsonld_extra %}{% endblock %}
+  {% set metrika_id = yandex_metrika_id() %}
+  {% if metrika_id %}
+  <script>
+    (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+    m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+    (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+    ym({{ metrika_id }}, "init", {clickmap:true, trackLinks:true, accurateTrackBalance:true, webvisor:true});
+  </script>
+  {% endif %}
 </head>
 <body class="{% block body_class %}{% endblock %}" data-page="{% block page %}home{% endblock %}">
+  {% if metrika_id %}
+  <noscript><div><img src="https://mc.yandex.ru/watch/{{ metrika_id }}" style="position:absolute;left:-9999px;" alt=""></div></noscript>
+  {% endif %}
   {% include "includes/nav.html" %}
   {% block content %}{% endblock %}
   {% include "includes/footer.html" %}

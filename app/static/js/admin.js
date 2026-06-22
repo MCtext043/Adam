@@ -4,6 +4,8 @@ const refreshBtn = document.querySelector("#refreshOrders");
 const refreshArchiveBtn = document.querySelector("#refreshArchive");
 const settingsForm = document.querySelector("#adminSettingsForm");
 const minOrderAmountInput = document.querySelector("#minOrderAmount");
+const freeDeliveryThresholdInput = document.querySelector("#freeDeliveryThreshold");
+const deliveryPricePerKmInput = document.querySelector("#deliveryPricePerKm");
 const settingsMessage = document.querySelector("#settingsMessage");
 const adminPageTitle = document.querySelector("#adminPageTitle");
 const sectionToday = document.querySelector("#adminSectionToday");
@@ -25,11 +27,14 @@ const statusLabels = {
 const formatPrice = (value) =>
   new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 0 }).format(value);
 
-function formatOrderDate(value) {
-  if (!value) return "";
+function formatOrderDate(order) {
+  if (order?.created_at_display) return order.created_at_display;
+  const value = order?.created_at;
+  if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleString("ru-RU", {
+    timeZone: "Europe/Samara",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -44,7 +49,7 @@ function statusOptions(currentStatus) {
   ).join("");
 }
 
-function renderOrders(orders, container, { emptyTitle, emptyText, showDate = false }) {
+function renderOrders(orders, container, { emptyTitle, emptyText }) {
   if (!container) return;
 
   if (!orders.length) {
@@ -62,16 +67,19 @@ function renderOrders(orders, container, { emptyTitle, emptyText, showDate = fal
         order.payment_status && order.payment_status !== "none"
           ? `<p><strong>Оплата:</strong> ${order.payment_status === "paid" ? "оплачен" : "ожидает"}</p>`
           : "";
-      const dateLine = showDate
-        ? `<p class="order-date"><strong>Дата:</strong> ${formatOrderDate(order.created_at)}</p>`
-        : "";
+      const deliveryAmount =
+        order.delivery_fee > 0
+          ? `${formatPrice(order.delivery_fee)} (~${order.delivery_distance_km} км)`
+          : "бесплатно";
       return `
         <article class="order-card">
           <div class="order-meta">
-            <h3>Заказ #${order.id}</h3>
+            <div class="order-meta-main">
+              <h3>Заказ #${order.id}</h3>
+              <p class="order-date">${formatOrderDate(order)}</p>
+            </div>
             <span class="status-pill">${statusLabels[order.status] || order.status}</span>
           </div>
-          ${dateLine}
           ${payLine}
           <p><strong>${order.customer_name}</strong> · ${order.phone}</p>
           ${order.customer_email ? `<p><strong>Email:</strong> ${order.customer_email}</p>` : ""}
@@ -90,9 +98,19 @@ function renderOrders(orders, container, { emptyTitle, emptyText, showDate = fal
               )
               .join("")}
           </div>
-          <div class="cart-total">
-            <span>Итого</span>
-            <strong>${formatPrice(order.total)}</strong>
+          <div class="order-payment-breakdown">
+            <div class="cart-total checkout-line">
+              <span>За заказ</span>
+              <strong>${formatPrice(order.food_total)}</strong>
+            </div>
+            <div class="cart-total checkout-line">
+              <span>За доставку</span>
+              <strong>${deliveryAmount}</strong>
+            </div>
+            <div class="cart-total checkout-total-line">
+              <span>Итого к оплате</span>
+              <strong>${formatPrice(order.total)}</strong>
+            </div>
           </div>
           <label>
             Статус
@@ -118,7 +136,6 @@ async function loadOrders() {
   renderOrders(orders, ordersEl, {
     emptyTitle: "Заказов за сегодня нет",
     emptyText: "Новые заказы появятся здесь сразу после оформления на сайте.",
-    showDate: false,
   });
 }
 
@@ -135,7 +152,6 @@ async function loadArchiveOrders() {
   renderOrders(orders, archiveOrdersEl, {
     emptyTitle: "Архив пуст",
     emptyText: "Здесь будут заказы за прошлые дни.",
-    showDate: true,
   });
 }
 
@@ -167,6 +183,12 @@ async function loadSettings() {
   if (!response.ok) return;
   const data = await response.json();
   minOrderAmountInput.value = String(Math.round(data.min_order_amount));
+  if (freeDeliveryThresholdInput) {
+    freeDeliveryThresholdInput.value = String(Math.round(data.free_delivery_threshold || 3000));
+  }
+  if (deliveryPricePerKmInput) {
+    deliveryPricePerKmInput.value = String(Math.round(data.delivery_price_per_km || 45));
+  }
 }
 
 function showSettingsMessage(text, type) {
@@ -181,11 +203,17 @@ async function saveSettings(event) {
   if (!minOrderAmountInput) return;
 
   const value = Number(minOrderAmountInput.value);
+  const freeThreshold = Number(freeDeliveryThresholdInput?.value || 3000);
+  const pricePerKm = Number(deliveryPricePerKmInput?.value || 45);
   const response = await fetch("/api/admin/settings", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     credentials: "same-origin",
-    body: JSON.stringify({ min_order_amount: value }),
+    body: JSON.stringify({
+      min_order_amount: value,
+      free_delivery_threshold: freeThreshold,
+      delivery_price_per_km: pricePerKm,
+    }),
   });
 
   if (response.status === 401) {
@@ -200,6 +228,12 @@ async function saveSettings(event) {
 
   const data = await response.json();
   minOrderAmountInput.value = String(Math.round(data.min_order_amount));
+  if (freeDeliveryThresholdInput) {
+    freeDeliveryThresholdInput.value = String(Math.round(data.free_delivery_threshold));
+  }
+  if (deliveryPricePerKmInput) {
+    deliveryPricePerKmInput.value = String(Math.round(data.delivery_price_per_km));
+  }
   showSettingsMessage("Сохранено", "success");
 }
 

@@ -45,11 +45,17 @@ services:
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8010}
+      APP_TIMEZONE: ${APP_TIMEZONE:-Europe/Samara}
       ELPLAT_ENABLED: ${ELPLAT_ENABLED:-false}
       ELPLAT_API_URL: ${ELPLAT_API_URL:-http://sbpekvtest.el-plat.ru}
       ELPLAT_LOGIN: ${ELPLAT_LOGIN:-}
       ELPLAT_PASSWORD: ${ELPLAT_PASSWORD:-}
       ELPLAT_ORG_ID: ${ELPLAT_ORG_ID:-}
+      CAFE_PHONE: ${CAFE_PHONE:-}
+      CAFE_VK_URL: ${CAFE_VK_URL:-}
+      YANDEX_METRIKA_ID: ${YANDEX_METRIKA_ID:-}
+      INDEXNOW_KEY: ${INDEXNOW_KEY:-}
+      OG_IMAGE_URL: ${OG_IMAGE_URL:-}
     volumes:
       - ./data:/srv/data:ro
     depends_on:

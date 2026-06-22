@@ -1113,6 +1113,10 @@ main {
   font-weight: 500;
 }
 
+.field-hint-warn {
+  color: #b45309;
+}
+
 .bonus-preview {
   margin: 10px 0 0;
   color: var(--beige-deep);
@@ -1189,6 +1193,64 @@ main {
   font-size: 13px;
   color: var(--beige-light);
   opacity: 0.9;
+}
+
+.footer-bottom a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.local-info {
+  background: linear-gradient(180deg, rgba(255, 248, 238, 0.08) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(217, 200, 173, 0.18);
+}
+
+.local-info-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px clamp(14px, 4vw, 56px) 32px;
+}
+
+.local-info h2 {
+  margin: 0 0 12px;
+  font-size: clamp(22px, 3vw, 28px);
+}
+
+.local-info p {
+  margin: 0 0 14px;
+  max-width: 72ch;
+  line-height: 1.6;
+  color: var(--beige-light);
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+}
+
+.local-info-address {
+  font-style: normal;
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  margin: 0 0 12px;
+}
+
+.local-info-address a {
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.local-info-links {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+}
+
+.local-info-links a {
+  text-decoration: underline;
+}
+
+.local-info-links span {
+  margin: 0 8px;
+  opacity: 0.6;
 }
 
 .toast-host {
@@ -1465,6 +1527,22 @@ main {
   color: #2d6a3e;
 }
 
+.checkout-total-line {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(32, 25, 21, 0.12);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.order-payment-breakdown {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(32, 25, 21, 0.1);
+}
+
 .loyalty-spend-panel {
   margin-bottom: 20px;
   padding: 16px 18px;
@@ -1635,10 +1713,15 @@ main {
   display: none !important;
 }
 
+.order-meta-main h3 {
+  margin: 0;
+}
+
 .order-date {
-  margin: 0 0 8px;
+  margin: 4px 0 0;
+  font-family: Arial, sans-serif;
   font-size: 0.9rem;
-  opacity: 0.75;
+  color: var(--muted);
 }
 
 /* --- SBP / Elplat payment page --- */
@@ -1668,6 +1751,35 @@ main {
 .pay-order-id {
   margin: 0 0 8px;
   opacity: 0.75;
+}
+
+.pay-breakdown {
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(245, 238, 226, 0.65);
+  border: 1px solid rgba(32, 25, 21, 0.08);
+}
+
+.pay-breakdown-line,
+.pay-breakdown-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  font-family: var(--font-sans, Arial, sans-serif);
+}
+
+.pay-breakdown-line {
+  margin-bottom: 8px;
+  font-size: 0.98rem;
+}
+
+.pay-breakdown-total {
+  padding-top: 10px;
+  border-top: 1px solid rgba(32, 25, 21, 0.12);
+  font-size: 1.15rem;
+  font-weight: 700;
 }
 
 .pay-amount {

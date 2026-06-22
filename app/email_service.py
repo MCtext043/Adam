@@ -113,6 +113,28 @@ def _order_discount_block(order: Any) -> str:
     """
 
 
+def _payment_summary_block(order: Any) -> str:
+    delivery_fee = float(getattr(order, "delivery_fee", 0) or 0)
+    food_total = float(order.total) - delivery_fee
+    delivery_text = _format_money(delivery_fee) if delivery_fee > 0 else "бесплатно"
+    km = float(getattr(order, "delivery_distance_km", 0) or 0)
+    if delivery_fee > 0 and km > 0:
+        delivery_text += f" (~{km:.0f} км)"
+    return f"""
+    <div style="margin:16px 0;padding:16px;background:#f9f6f1;border-radius:12px;font-family:Arial,sans-serif;font-size:15px;">
+      <p style="margin:0 0 8px;display:flex;justify-content:space-between;gap:12px;">
+        <span>За заказ</span><strong>{_format_money(food_total)}</strong>
+      </p>
+      <p style="margin:0 0 8px;display:flex;justify-content:space-between;gap:12px;">
+        <span>За доставку</span><strong>{delivery_text}</strong>
+      </p>
+      <p style="margin:0;display:flex;justify-content:space-between;gap:12px;font-size:18px;font-weight:700;">
+        <span>Итого к оплате</span><strong>{_format_money(order.total)}</strong>
+      </p>
+    </div>
+    """
+
+
 def build_order_html(order: Any, *, headline: str, intro_html: str) -> str:
     status_label = ORDER_STATUS_LABELS.get(order.status, order.status)
     return f"""<!DOCTYPE html>
@@ -145,7 +167,7 @@ def build_order_html(order: Any, *, headline: str, intro_html: str) -> str:
               {_order_lines_html(order)}
             </table>
             {_order_discount_block(order)}
-            <p style="margin:16px 0 0;font-size:22px;font-weight:700;">Итого: {_format_money(order.total)}</p>
+            {_payment_summary_block(order)}
             <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
             <p style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:14px;color:#75675c;">
               Телефон: {order.phone}
@@ -176,10 +198,18 @@ def build_order_plain(order: Any, *, intro: str) -> str:
     spent = int(getattr(order, "loyalty_points_spent", 0) or 0)
     if spent > 0:
         lines.append(f"Списано бонусов: {spent}")
+    delivery_fee = float(getattr(order, "delivery_fee", 0) or 0)
+    food_total = float(order.total) - delivery_fee
+    lines.append(f"За заказ: {_format_money(food_total)}")
+    if delivery_fee > 0:
+        km = float(getattr(order, "delivery_distance_km", 0) or 0)
+        lines.append(f"За доставку ({km:.0f} км): {_format_money(delivery_fee)}")
+    else:
+        lines.append("За доставку: бесплатно")
     lines.extend(
         [
             "",
-            f"Итого: {_format_money(order.total)}",
+            f"Итого к оплате: {_format_money(order.total)}",
             f"Телефон: {order.phone}",
             f"Адрес: {order.address}",
             "",

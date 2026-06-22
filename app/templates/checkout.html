@@ -23,8 +23,16 @@
           <span>Бонусы</span>
           <strong id="checkoutDiscount">−0 ₽</strong>
         </div>
-        <div class="cart-total">
-          <span>К оплате</span>
+        <div class="cart-total checkout-line checkout-food-line">
+          <span>За заказ</span>
+          <strong id="checkoutFoodTotal">0 ₽</strong>
+        </div>
+        <div class="cart-total checkout-line" id="deliveryLine">
+          <span>За доставку</span>
+          <strong id="checkoutDelivery">—</strong>
+        </div>
+        <div class="cart-total checkout-total-line">
+          <span>Итого к оплате</span>
           <strong id="checkoutCartTotal">0 ₽</strong>
         </div>
       </div>
@@ -63,7 +71,8 @@
         </label>
         <label>
           Адрес доставки
-          <textarea name="address" placeholder="Улица, дом, квартира" required minlength="8"></textarea>
+          <textarea name="address" id="deliveryAddress" placeholder="Город, улица, дом, квартира" required minlength="8"></textarea>
+          <span class="field-hint" id="deliveryHint"></span>
         </label>
         <label>
           Комментарий

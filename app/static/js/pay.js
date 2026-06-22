@@ -7,6 +7,8 @@ const paySuccess = document.getElementById("paySuccess");
 const payError = document.getElementById("payError");
 const payQrCode = document.getElementById("payQrCode");
 const payMobileBtn = document.getElementById("payMobileBtn");
+const payFoodTotalEl = document.getElementById("payFoodTotal");
+const payDeliveryTotalEl = document.getElementById("payDeliveryTotal");
 const payAmountEl = document.getElementById("payAmount");
 let pollTimer = null;
 
@@ -67,6 +69,16 @@ async function loadOrderInfo() {
   return response.json();
 }
 
+function renderPaymentBreakdown(info) {
+  if (!info) return;
+  if (payFoodTotalEl) payFoodTotalEl.textContent = formatPrice(info.food_total ?? 0);
+  if (payDeliveryTotalEl) {
+    const fee = info.delivery_fee ?? 0;
+    payDeliveryTotalEl.textContent = fee > 0 ? formatPrice(fee) : "бесплатно";
+  }
+  if (payAmountEl) payAmountEl.textContent = formatPrice(info.total ?? 0);
+}
+
 async function startPayment() {
   if (!window.ELPLAT_ENABLED) {
     showError("Оплата СБП не настроена. Свяжитесь с кафе.");
@@ -79,11 +91,11 @@ async function startPayment() {
 
   const info = await loadOrderInfo();
   if (info?.payment_status === "paid") {
-    if (payAmountEl) payAmountEl.textContent = formatPrice(info.total);
+    renderPaymentBreakdown(info);
     showPaid();
     return;
   }
-  if (info && payAmountEl) payAmountEl.textContent = formatPrice(info.total);
+  if (info) renderPaymentBreakdown(info);
 
   if (params.get("done") === "1") {
     await pollStatus();
@@ -100,10 +112,11 @@ async function startPayment() {
       throw new Error(data.detail || "Не удалось создать QR");
     }
     if (data.paid) {
+      renderPaymentBreakdown(data);
       showPaid();
       return;
     }
-    if (data.amount && payAmountEl) payAmountEl.textContent = formatPrice(data.amount);
+    renderPaymentBreakdown(data);
     renderQr(data.qr_data);
     pollTimer = setInterval(pollStatus, 2500);
     pollStatus();

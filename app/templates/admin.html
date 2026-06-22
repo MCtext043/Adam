@@ -6,6 +6,8 @@
   <meta name="referrer" content="origin">
   <meta name="robots" content="noindex, nofollow">
   <title>Админ-панель | Кафе Адам</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png">
   <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body class="admin-body">
@@ -33,6 +35,14 @@
         <label>
           Минимальная сумма заказа, ₽
           <input type="number" id="minOrderAmount" name="min_order_amount" min="0" step="50" required>
+        </label>
+        <label>
+          Бесплатная доставка от, ₽
+          <input type="number" id="freeDeliveryThreshold" name="free_delivery_threshold" min="0" step="100" required>
+        </label>
+        <label>
+          Цена доставки, ₽ / км
+          <input type="number" id="deliveryPricePerKm" name="delivery_price_per_km" min="0" step="1" required>
         </label>
         <button class="button button-dark" type="submit">Сохранить</button>
         <p class="form-message" id="settingsMessage" hidden></p>
@@ -64,6 +74,6 @@
   <script>
     window.ORDER_STATUSES = {{ statuses | tojson }};
   </script>
-  <script src="/static/js/admin.js?v=2"></script>
+  <script src="/static/js/admin.js?v=3"></script>
 </body>
 </html>

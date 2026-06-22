@@ -6,6 +6,8 @@
   <meta name="referrer" content="origin">
   <meta name="robots" content="noindex, nofollow">
   <title>Оплата заказа | Кафе Адам</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png">
   <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body class="pay-body">
@@ -18,7 +20,11 @@
     </a>
     <h1 class="pay-title">Оплата по СБП</h1>
     <p class="pay-order-id">Заказ №<span id="payOrderId">{{ order_id }}</span></p>
-    <p class="pay-amount" id="payAmount"></p>
+    <div class="pay-breakdown" id="payBreakdown">
+      <p class="pay-breakdown-line"><span>За заказ</span> <strong id="payFoodTotal">—</strong></p>
+      <p class="pay-breakdown-line"><span>За доставку</span> <strong id="payDeliveryTotal">—</strong></p>
+      <p class="pay-breakdown-total"><span>Итого к оплате</span> <strong id="payAmount">—</strong></p>
+    </div>
 
     <div id="payLoading" class="pay-loading">Формируем QR-код…</div>
     <div id="payBlock" class="pay-qr-block" hidden>

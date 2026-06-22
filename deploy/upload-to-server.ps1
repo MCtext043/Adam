@@ -46,7 +46,13 @@ try {
         "ELPLAT_API_URL",
         "ELPLAT_LOGIN",
         "ELPLAT_PASSWORD",
-        "ELPLAT_ORG_ID"
+        "ELPLAT_ORG_ID",
+        "CAFE_PHONE",
+        "CAFE_VK_URL",
+        "YANDEX_METRIKA_ID",
+        "INDEXNOW_KEY",
+        "OG_IMAGE_URL",
+        "APP_TIMEZONE"
     )
 
     function Normalize-SmtpFrom([string]$Value, [string]$SmtpUser) {
@@ -132,6 +138,9 @@ try {
     }
     if ($envLines -notmatch "SESSION_COOKIE_SECURE=") {
         $envLines += "SESSION_COOKIE_SECURE=true"
+    }
+    if ($envLines -notmatch "APP_TIMEZONE=") {
+        $envLines += "APP_TIMEZONE=Europe/Samara"
     }
 
     # Docker Compose expects env files without BOM and with Unix line endings.

@@ -6,6 +6,10 @@ const checkoutCartTotalEl = document.querySelector("#checkoutCartTotal");
 const checkoutSubtotalEl = document.querySelector("#checkoutSubtotal");
 const checkoutDiscountEl = document.querySelector("#checkoutDiscount");
 const discountLineEl = document.querySelector("#discountLine");
+const checkoutFoodTotalEl = document.querySelector("#checkoutFoodTotal");
+const checkoutDeliveryEl = document.querySelector("#checkoutDelivery");
+const deliveryAddressEl = document.querySelector("#deliveryAddress");
+const deliveryHintEl = document.querySelector("#deliveryHint");
 const clearCartBtn = document.querySelector("#clearCart");
 const orderForm = document.querySelector("#orderForm");
 const orderMessage = document.querySelector("#orderMessage");
@@ -33,9 +37,16 @@ let products = [];
 let cart = JSON.parse(localStorage.getItem("adamCart") || "{}");
 let activeCategory = "all";
 let searchQuery = "";
-let storeSettings = { min_order_amount: 500, payment_enabled: false };
+let storeSettings = {
+  min_order_amount: 500,
+  free_delivery_threshold: 3000,
+  delivery_price_per_km: 45,
+  payment_enabled: false,
+};
 let authUser = null;
 let loyaltySpendAmount = 0;
+let deliveryEstimate = { fee: 0, distance_km: 0, free: false, ok: false, loading: false, error: "" };
+let deliveryEstimateTimer = null;
 
 const formatPrice = (value) =>
   new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 0 }).format(value);
@@ -183,18 +194,114 @@ function syncLoyaltyInput(subtotal) {
   }
 }
 
+function getDeliveryFee(subtotal) {
+  if (subtotal >= storeSettings.free_delivery_threshold) return 0;
+  if (!deliveryEstimate.ok) return 0;
+  return deliveryEstimate.fee || 0;
+}
+
+function updateDeliveryHint(subtotal) {
+  if (!deliveryHintEl) return;
+  const threshold = Math.round(storeSettings.free_delivery_threshold || 3000);
+  const perKm = Math.round(storeSettings.delivery_price_per_km || 45);
+  if (subtotal >= storeSettings.free_delivery_threshold) {
+    deliveryHintEl.textContent = `Доставка бесплатно (заказ от ${threshold} ₽).`;
+    return;
+  }
+  if (deliveryEstimate.loading) {
+    deliveryHintEl.textContent = "Считаем расстояние до адреса…";
+    return;
+  }
+  if (deliveryEstimate.error) {
+    deliveryHintEl.textContent = deliveryEstimate.error;
+    deliveryHintEl.classList.add("field-hint-warn");
+    return;
+  }
+  deliveryHintEl.classList.remove("field-hint-warn");
+  if (deliveryEstimate.ok && deliveryEstimate.distance_km > 0) {
+    deliveryHintEl.textContent = `~${deliveryEstimate.distance_km} км · ${perKm} ₽/км. От ${threshold} ₽ доставка бесплатно.`;
+    return;
+  }
+  deliveryHintEl.textContent = `Доставка ${perKm} ₽/км (примерный расчёт по адресу). От ${threshold} ₽ — бесплатно.`;
+}
+
+async function requestDeliveryEstimate() {
+  if (page !== "checkout") return;
+  const subtotal = getCartSubtotal();
+  if (subtotal >= storeSettings.free_delivery_threshold) {
+    deliveryEstimate = { fee: 0, distance_km: 0, free: true, ok: true, loading: false, error: "" };
+    updateCheckoutTotals(subtotal);
+    return;
+  }
+  const address = deliveryAddressEl?.value.trim() || "";
+  if (address.length < 8) {
+    deliveryEstimate = { fee: 0, distance_km: 0, free: false, ok: false, loading: false, error: "" };
+    updateCheckoutTotals(subtotal);
+    return;
+  }
+  deliveryEstimate.loading = true;
+  deliveryEstimate.error = "";
+  updateCheckoutTotals(subtotal);
+  try {
+    const response = await fetch("/api/delivery/estimate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ address, subtotal }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      const detail = data.detail || "Не удалось рассчитать доставку";
+      deliveryEstimate = {
+        fee: 0,
+        distance_km: 0,
+        free: false,
+        ok: false,
+        loading: false,
+        error: typeof detail === "string" ? detail : "Укажите более точный адрес",
+      };
+    } else {
+      deliveryEstimate = {
+        fee: data.delivery_fee,
+        distance_km: data.distance_km,
+        free: data.free_delivery,
+        ok: true,
+        loading: false,
+        error: "",
+      };
+    }
+  } catch {
+    deliveryEstimate = { fee: 0, distance_km: 0, free: false, ok: false, loading: false, error: "" };
+  }
+  updateCheckoutTotals(getCartSubtotal());
+}
+
 function updateCheckoutTotals(subtotal) {
   loyaltySpendAmount = getLoyaltySpendForCheckout(subtotal);
   const discount = loyaltySpendAmount;
-  const finalTotal = Math.max(0, subtotal - discount);
+  const deliveryFee = getDeliveryFee(subtotal);
+  const foodTotal = Math.max(0, subtotal - discount);
+  const finalTotal = foodTotal + deliveryFee;
 
   if (checkoutSubtotalEl) checkoutSubtotalEl.textContent = formatPrice(subtotal);
   if (checkoutDiscountEl) checkoutDiscountEl.textContent = `−${formatPrice(discount)}`;
   if (discountLineEl) discountLineEl.hidden = discount <= 0;
+  if (checkoutFoodTotalEl) checkoutFoodTotalEl.textContent = formatPrice(foodTotal);
+  if (checkoutDeliveryEl) {
+    if (subtotal >= storeSettings.free_delivery_threshold) {
+      checkoutDeliveryEl.textContent = "бесплатно";
+    } else if (deliveryEstimate.loading) {
+      checkoutDeliveryEl.textContent = "…";
+    } else if (!deliveryEstimate.ok) {
+      checkoutDeliveryEl.textContent = "—";
+    } else {
+      checkoutDeliveryEl.textContent = deliveryFee > 0 ? formatPrice(deliveryFee) : "бесплатно";
+    }
+  }
   if (checkoutCartTotalEl) checkoutCartTotalEl.textContent = formatPrice(finalTotal);
 
   syncLoyaltyInput(subtotal);
   updateMinOrderHints(subtotal);
+  updateDeliveryHint(subtotal);
   return finalTotal;
 }
 
@@ -227,6 +334,10 @@ function renderCartList(targetItemsEl, targetTotalEl) {
     targetTotalEl.textContent = formatPrice(displayTotal);
   } else if (page === "checkout") {
     updateCheckoutTotals(subtotal);
+    if (subtotal < storeSettings.free_delivery_threshold && deliveryAddressEl?.value.trim().length >= 8) {
+      clearTimeout(deliveryEstimateTimer);
+      deliveryEstimateTimer = setTimeout(() => requestDeliveryEstimate(), 400);
+    }
   } else {
     updateMinOrderHints(subtotal);
   }
@@ -368,6 +479,11 @@ loyaltyPointsInput?.addEventListener("input", () => {
   renderCheckoutCart();
 });
 
+deliveryAddressEl?.addEventListener("input", () => {
+  clearTimeout(deliveryEstimateTimer);
+  deliveryEstimateTimer = setTimeout(() => requestDeliveryEstimate(), 600);
+});
+
 orderForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -384,6 +500,21 @@ orderForm?.addEventListener("submit", async (event) => {
   }
 
   const formData = new FormData(orderForm);
+  const address = String(formData.get("address") || "").trim();
+  if (subtotal < storeSettings.free_delivery_threshold) {
+    if (address.length < 8) {
+      setMessage("Укажите полный адрес доставки.", "error");
+      return;
+    }
+    if (!deliveryEstimate.ok) {
+      await requestDeliveryEstimate();
+    }
+    if (!deliveryEstimate.ok) {
+      setMessage(deliveryEstimate.error || "Не удалось рассчитать доставку. Проверьте адрес.", "error");
+      return;
+    }
+  }
+
   const emailRaw = String(formData.get("email") || "").trim();
   const payload = {
     customer_name: formData.get("customer_name"),
@@ -427,7 +558,10 @@ orderForm?.addEventListener("submit", async (event) => {
     if (order.loyalty_points_spent) {
       bonusText = ` Списано бонусов: ${order.loyalty_points_spent}.${bonusText}`;
     }
-    setMessage(`Заказ #${order.id} принят. Итого: ${formatPrice(order.total)}.${bonusText}`, "success");
+    setMessage(
+      `Заказ #${order.id} принят. За заказ: ${formatPrice(order.food_total)}, за доставку: ${formatPrice(order.delivery_fee)}, итого: ${formatPrice(order.total)}.${bonusText}`,
+      "success",
+    );
 
     await hydrateCheckoutAccount();
   } catch (error) {

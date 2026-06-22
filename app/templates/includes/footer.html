@@ -1,8 +1,12 @@
 <footer class="footer site-footer">
   <div class="footer-inner">
     <div class="footer-col">
-      <h3 class="footer-heading">Кафе «Адам»</h3>
+      <h3 class="footer-heading">{{ cafe_name }}</h3>
       <p class="footer-text">село Октябрьский, 41, Удмуртская Республика</p>
+      <p class="footer-text">
+        <a href="{{ cafe_phone_href() }}">{{ cafe_phone_display() }}</a>
+      </p>
+      <p class="footer-text footer-muted">Доставка в Ижевск и Завьяловский район</p>
       <p class="footer-text">Остановки «Октябрьский», «Лента». Парковка.</p>
       <p class="footer-actions">
         <a class="button button-light footer-route-btn" href="{{ yandex_map_org_url }}" target="_blank" rel="noopener noreferrer">Как добраться</a>
@@ -22,7 +26,7 @@
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© Кафе «Адам»</span>
-    <span>Доставка</span>
+    <span>© {{ cafe_name_plain }}</span>
+    <span><a href="/">Доставка</a> · <a href="/about">О кафе</a></span>
   </div>
 </footer>

@@ -1,5 +1,10 @@
 {% extends "base.html" %}
-{% block title %}О кафе | Кафе Адам{% endblock %}
+{% block title %}О кафе | Кафе Адам Ижевск{% endblock %}
+{% block meta_description %}Кафе «Адам» в селе Октябрьский — кавказская кухня, мангал, выпечка. Доставка в Ижевск и зал для гостей.{% endblock %}
+{% block seo_page_name %}О кафе{% endblock %}
+{% block seo_jsonld_extra %}
+<script type="application/ld+json">{{ json_ld_script(breadcrumb_json_ld([('Главная', site_url() + '/'), ('О кафе', canonical_url)]))|safe }}</script>
+{% endblock %}
 {% block page %}about{% endblock %}
 {% block content %}
 <main class="page-main about-page">
