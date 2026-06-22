@@ -47,9 +47,60 @@ let authUser = null;
 let loyaltySpendAmount = 0;
 let deliveryEstimate = { fee: 0, distance_km: 0, free: false, ok: false, loading: false, error: "" };
 let deliveryEstimateTimer = null;
+let choiceSelections = {};
 
 const formatPrice = (value) =>
   new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 0 }).format(value);
+
+function cartKey(productId, choiceLabel = null) {
+  return choiceLabel ? `${productId}::${choiceLabel}` : String(productId);
+}
+
+function parseCartKey(key) {
+  const idx = key.indexOf("::");
+  if (idx === -1) return { productId: Number(key), choiceLabel: null };
+  return { productId: Number(key.slice(0, idx)), choiceLabel: key.slice(idx + 2) };
+}
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function getSelectedChoiceIndex(product) {
+  const idx = choiceSelections[product.id];
+  if (Number.isInteger(idx) && product.choices[idx]) return idx;
+  return null;
+}
+
+function hasChoiceSelection(product) {
+  return getSelectedChoiceIndex(product) !== null;
+}
+
+function getSelectedChoiceLabel(product) {
+  const idx = getSelectedChoiceIndex(product);
+  if (idx === null) return null;
+  return product.choices[idx].label;
+}
+
+function productHasChoices(product) {
+  return Array.isArray(product.choices) && product.choices.length > 0;
+}
+
+function getProductLinePrice(product, choiceLabel) {
+  if (productHasChoices(product) && choiceLabel) {
+    const choice = product.choices.find((item) => item.label === choiceLabel);
+    if (choice) return Number(choice.price);
+  }
+  return product.price;
+}
+
+function getProductDisplayName(product, choiceLabel) {
+  return choiceLabel ? `${product.name} (${choiceLabel})` : product.name;
+}
 
 function saveCart() {
   localStorage.setItem("adamCart", JSON.stringify(cart));
@@ -58,15 +109,19 @@ function saveCart() {
 
 function getCartEntries() {
   return Object.entries(cart)
-    .map(([productId, quantity]) => {
-      const product = products.find((item) => item.id === Number(productId));
-      return product ? { product, quantity } : null;
+    .map(([key, quantity]) => {
+      const { productId, choiceLabel } = parseCartKey(key);
+      const product = products.find((item) => item.id === productId);
+      if (!product) return null;
+      const linePrice = getProductLinePrice(product, choiceLabel);
+      const displayName = getProductDisplayName(product, choiceLabel);
+      return { product, quantity, choiceLabel, linePrice, displayName, cartKey: key };
     })
     .filter(Boolean);
 }
 
 function getCartSubtotal() {
-  return getCartEntries().reduce((sum, entry) => sum + entry.product.price * entry.quantity, 0);
+  return getCartEntries().reduce((sum, entry) => sum + entry.linePrice * entry.quantity, 0);
 }
 
 function getFilteredProducts() {
@@ -97,7 +152,34 @@ function renderCategoryFilters() {
 }
 
 function productFooterHtml(product) {
-  const qty = cart[product.id] || 0;
+  if (productHasChoices(product)) {
+    const minPrice = Math.min(...product.choices.map((item) => Number(item.price)));
+    const selectedIdx = getSelectedChoiceIndex(product);
+    const selectedLabel = getSelectedChoiceLabel(product);
+    const priceText = selectedLabel
+      ? formatPrice(getProductLinePrice(product, selectedLabel))
+      : `от ${formatPrice(minPrice)}`;
+    const chips = product.choices
+      .map((item, idx) => {
+        const active = idx === selectedIdx ? " active" : "";
+        return `<button type="button" class="choice-chip${active}" data-choice-pick="${product.id}" data-choice-idx="${idx}"><span class="choice-chip-label">${escapeHtml(item.label)}</span><span class="choice-chip-price">${formatPrice(Number(item.price))}</span></button>`;
+      })
+      .join("");
+    const addDisabled = !hasChoiceSelection(product);
+    return `
+      <div class="product-choice-panel">
+        <p class="choice-prompt">Выберите вариант:</p>
+        <div class="product-choice-chips" role="listbox" aria-label="Вариант">${chips}</div>
+        <div class="product-footer product-footer-choices">
+          <span class="price">${priceText}</span>
+          <button class="button button-dark" type="button" data-add="${product.id}" data-with-choice="1"${addDisabled ? " disabled" : ""}>В корзину</button>
+        </div>
+      </div>
+    `;
+  }
+
+  const key = cartKey(product.id);
+  const qty = cart[key] || 0;
   const priceHtml = `<span class="price">${formatPrice(product.price)}</span>`;
 
   if (qty > 0) {
@@ -314,16 +396,16 @@ function renderCartList(targetItemsEl, targetTotalEl) {
     targetItemsEl.innerHTML = entries.length
       ? entries
           .map(
-            ({ product, quantity }) => `
+            ({ displayName, linePrice, quantity, cartKey: key }) => `
             <div class="cart-item">
               <div>
-                <strong>${product.name}</strong><br>
-                <span>${formatPrice(product.price)} за шт.</span>
+                <strong>${displayName}</strong><br>
+                <span>${formatPrice(linePrice)} за шт.</span>
               </div>
               <div class="quantity-controls">
-                <button type="button" data-decrease="${product.id}" aria-label="Уменьшить">−</button>
+                <button type="button" data-decrease="${key}" aria-label="Уменьшить">−</button>
                 <strong>${quantity}</strong>
-                <button type="button" data-increase="${product.id}" aria-label="Увеличить">+</button>
+                <button type="button" data-increase="${key}" aria-label="Увеличить">+</button>
               </div>
             </div>
           `,
@@ -389,35 +471,68 @@ function refreshProductViews() {
   renderCheckoutCart();
 }
 
-function addToCart(productId, toastName) {
+function addToCart(productId, choiceLabel = null, toastName = null) {
   const product = products.find((item) => item.id === Number(productId));
   if (!product) return;
-  cart[productId] = (cart[productId] || 0) + 1;
+  if (productHasChoices(product) && !choiceLabel) {
+    if (typeof window.showAdamToast === "function") {
+      window.showAdamToast("Выберите вариант перед добавлением в корзину");
+    }
+    return;
+  }
+
+  const key = cartKey(product.id, productHasChoices(product) ? choiceLabel : null);
+  cart[key] = (cart[key] || 0) + 1;
   refreshProductViews();
 
-  if (toastName && typeof window.showAdamToast === "function") {
-    window.showAdamToast(`«${toastName}» добавлено в корзину`);
+  const name = toastName || getProductDisplayName(product, choiceLabel);
+  if (name && typeof window.showAdamToast === "function") {
+    window.showAdamToast(`«${name}» добавлено в корзину`);
   }
 }
 
-function decreaseCartItem(productId) {
-  if (!cart[productId]) return;
-  cart[productId] -= 1;
-  if (cart[productId] <= 0) delete cart[productId];
+function increaseCartKey(key) {
+  if (!cart[key]) return;
+  cart[key] += 1;
+  refreshProductViews();
+}
+
+function decreaseCartItem(key) {
+  if (!cart[key]) return;
+  cart[key] -= 1;
+  if (cart[key] <= 0) delete cart[key];
   refreshProductViews();
 }
 
 function bindProductGridClicks(root) {
   root?.addEventListener("click", (event) => {
+    const chipButton = event.target.closest("[data-choice-pick]");
     const addButton = event.target.closest("[data-add]");
     const increaseButton = event.target.closest("[data-increase]");
     const decreaseButton = event.target.closest("[data-decrease]");
-    if (addButton) {
-      const product = products.find((item) => item.id === Number(addButton.dataset.add));
-      addToCart(addButton.dataset.add, product?.name);
+
+    if (chipButton) {
+      const productId = Number(chipButton.dataset.choicePick);
+      const choiceIdx = Number(chipButton.getAttribute("data-choice-idx"));
+      if (!Number.isInteger(choiceIdx)) return;
+      choiceSelections[productId] = choiceIdx;
+      renderProducts();
       return;
     }
-    if (increaseButton) addToCart(increaseButton.dataset.increase);
+
+    if (addButton) {
+      if (addButton.disabled) return;
+      const productId = Number(addButton.dataset.add);
+      const product = products.find((item) => item.id === productId);
+      const choiceLabel = addButton.dataset.withChoice && product ? getSelectedChoiceLabel(product) : null;
+      addToCart(productId, choiceLabel, product ? getProductDisplayName(product, choiceLabel) : null);
+      return;
+    }
+    if (increaseButton) {
+      const key = increaseButton.dataset.increase;
+      if (key.includes("::")) increaseCartKey(key);
+      else addToCart(Number(key));
+    }
     if (decreaseButton) decreaseCartItem(decreaseButton.dataset.decrease);
   });
 }
@@ -427,14 +542,22 @@ bindProductGridClicks(productsEl);
 cartItemsEl?.addEventListener("click", (event) => {
   const increaseButton = event.target.closest("[data-increase]");
   const decreaseButton = event.target.closest("[data-decrease]");
-  if (increaseButton) addToCart(increaseButton.dataset.increase);
+  if (increaseButton) {
+    const key = increaseButton.dataset.increase;
+    if (key.includes("::")) increaseCartKey(key);
+    else addToCart(Number(key));
+  }
   if (decreaseButton) decreaseCartItem(decreaseButton.dataset.decrease);
 });
 
 checkoutCartItemsEl?.addEventListener("click", (event) => {
   const increaseButton = event.target.closest("[data-increase]");
   const decreaseButton = event.target.closest("[data-decrease]");
-  if (increaseButton) addToCart(increaseButton.dataset.increase);
+  if (increaseButton) {
+    const key = increaseButton.dataset.increase;
+    if (key.includes("::")) increaseCartKey(key);
+    else addToCart(Number(key));
+  }
   if (decreaseButton) decreaseCartItem(decreaseButton.dataset.decrease);
 });
 
@@ -522,7 +645,11 @@ orderForm?.addEventListener("submit", async (event) => {
     email: emailRaw || null,
     address: formData.get("address"),
     comment: formData.get("comment") || "",
-    items: entries.map(({ product, quantity }) => ({ product_id: product.id, quantity })),
+    items: entries.map(({ product, quantity, choiceLabel }) => ({
+      product_id: product.id,
+      quantity,
+      choice_label: choiceLabel || null,
+    })),
     loyalty_points_to_spend: getLoyaltySpendForCheckout(subtotal),
   };
 
@@ -641,7 +768,11 @@ async function loadStoreSettings() {
 
 async function loadProducts() {
   const response = await fetch("/api/products");
-  products = await response.json();
+  const raw = await response.json();
+  products = raw.map((product) => ({
+    ...product,
+    choices: Array.isArray(product.choices) ? product.choices : [],
+  }));
   renderCategoryFilters();
   renderProducts();
   renderCart();

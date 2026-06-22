@@ -1,0 +1,217 @@
+[
+  {
+    "name": "Садж",
+    "description": "Мясной садж в сковороде с овощами, специями и ароматным соусом.",
+    "price": "1860",
+    "category": "Горячее",
+    "image_url": "https://i.wfolio.ru/x/KfN2JhbB89-m6UeUSQ-43b-4LTDPyZVn/q6sVLUvjujnOk6mXbO2srbIKpPlcOqy0/t7rVx8PT5NFW95R5iPfYgEbcz9T9DM03/mjHu5nb3MiY0pLaVSfnIEvvsgGTLYWd3/DB3ADSLxnrANMZCME7ysO72kBFQhyM26/hYMR0lODNdOVDM1a-FvOy3aHq_yLHX9R/scyVvy8F_kGSmCsUPJvjGfJEKg96ZOcN/k9OQYqdsnBkS447GKluQSjqbvsXK0Yms/iXm01OGU5yomNA9Sin7GpPfiE2Nj2lPr/K010Q1Y2XhvgkZod0KUmG6umf1cpWvqm/AC6G4f5yUNoFZKa-rdC3PBCDDrLC_Oik/FYHpLwn9Y67cHC4m-I_5EGkhyWpP1brD/CCUOvsAETnBJV9ro-hyr4-yqqWZODMJ7/8lhbkc1hdUMP_Hsj7VQM89dptUIwmMzh/sQIg1_JeRJLB3QZ7rbb6ha4JhF4nBGju/_8N7XLyuvBFJeOcLYf9_Zn72d63EOboK/QclbCAeA4SsYqJmAGkoVweQNHXs1q8lf/2HtyDx380is.jpg",
+    "choices": [
+      {"label": "Курица", "price": "1860"},
+      {"label": "Баранина", "price": "1980"},
+      {"label": "Свинина", "price": "1800"},
+      {"label": "Печень", "price": "1560"},
+      {"label": "Телятина", "price": "2200"}
+    ]
+  },
+  {
+    "name": "Соусы",
+    "description": "Порция соуса 30 г — выберите вариант перед заказом.",
+    "price": "70",
+    "category": "Соусы",
+    "image_url": "https://i.wfolio.ru/x/Sjpgrm2v20FR6Cth5viRk6Iir5aoqG4h/ZXWGJmu7EQlhnv6D9ELHSMzGOBuFicXp/OGcM34slpvmXTMkbuJagSV1xA4akZdWt/iGTrK_jx2PJdzPpMyVlbGIyR5mAu9UqG/rL-5DUxboiaoOuXyk54XGX-OT-NQ5DIt/t4cadjULppTx1gEZEyG7Eqk7p-JphqNA/E-VjBOssplpcT44Fqigxab1SM3EHSrfa/U4UZrdXN1szhc66D2tDiZuIGXN9MT8VC/iDb7e4k84EwljCj8kHh1ilL3nZksLO5G/Efch0Q3fLje9XmV7gDl808jPKb2CRnDQ/P-lg6HhVseLGO3WMmVEdJu0t-ECy0SLN/mXJ4QTo-1ldqcQgp4TXbQzGMbzM4_ybK/nm-PbhCzM0gYuc37gyfdJ4GEQoZ0kFOw/51z3qni6muh6R9eakxcHGoLlUNIfy8tT/SttbCmeOXki9hcL0YXZRIdqX78_FijGg/wiS5PgbIL-44dsP1g2lacui7nqAHIIVU/FD9tnSHBcb7DqFN3IvJWbqq99qOfN2pC/KB1ME3zWm2s.jpg",
+    "choices": [
+      {"label": "Шашлык фирменный", "price": "80"},
+      {"label": "Аджика кавказская", "price": "110"},
+      {"label": "Кетчуп сладкий", "price": "70"},
+      {"label": "Сырный соус", "price": "100"},
+      {"label": "Тар-тар", "price": "90"},
+      {"label": "Майонез", "price": "70"},
+      {"label": "Сметана с чесноком и зеленью", "price": "90"}
+    ]
+  },
+  {
+    "name": "Хлеб",
+    "description": "Выпечка и лаваш — выберите вариант.",
+    "price": "30",
+    "category": "Выпечка",
+    "image_url": "https://i.wfolio.ru/x/Sjpgrm2v20FR6Cth5viRk6Iir5aoqG4h/ZXWGJmu7EQlhnv6D9ELHSMzGOBuFicXp/OGcM34slpvmXTMkbuJagSV1xA4akZdWt/iGTrK_jx2PJdzPpMyVlbGIyR5mAu9UqG/rL-5DUxboiaoOuXyk54XGX-OT-NQ5DIt/t4cadjULppTx1gEZEyG7Eqk7p-JphqNA/E-VjBOssplpcT44Fqigxab1SM3EHSrfa/U4UZrdXN1szhc66D2tDiZuIGXN9MT8VC/iDb7e4k84EwljCj8kHh1ihDpJfngpbgr/FmM2iyqoBApP5CngR-kMLEEiWAQaOdZI/VfBaxLOH_uLWO-HZHOhzUQnx7NayoxYm/xw5jmYUqzkkMHq5xjEpsuPLMKXiSHUVV/4NROziZxRGlucp0QOHJ1yBmUtKPD4Dt3/J2HeOvDhIj6L_YNodWE2-7pBHEEeJr2f/WhbEt256KVEbkqT3XJ2lohItJrP55ggp/b3T4ZTtcudImonBhS1SGgDEK7YA320DL/MwSelTVslMX2pFWqeRHVUV1v5ttEImop/JswWxaSXgVw.jpg",
+    "choices": [
+      {"label": "Грузинский лаваш", "price": "150"},
+      {"label": "Половина грузинского лаваша", "price": "80"},
+      {"label": "Тонкий лаваш", "price": "90"},
+      {"label": "Бородинский хлеб", "price": "30"}
+    ]
+  },
+  {
+    "name": "Овощи на гриле",
+    "description": "Овощи на углях — выберите, что добавить к заказу.",
+    "price": "150",
+    "category": "Гарниры",
+    "image_url": "https://i.wfolio.ru/x/Sjpgrm2v20FR6Cth5viRk6Iir5aoqG4h/ZXWGJmu7EQlhnv6D9ELHSMzGOBuFicXp/OGcM34slpvmXTMkbuJagSV1xA4akZdWt/iGTrK_jx2PJdzPpMyVlbGIyR5mAu9UqG/rL-5DUxboiaoOuXyk54XGX-OT-NQ5DIt/t4cadjULppTx1gEZEyG7Eqk7p-JphqNA/E-VjBOssplpcT44Fqigxab1SM3EHSrfa/U4UZrdXN1szhc66D2tDiZuIGXN9MT8VC/iDb7e4k84EwljCj8kHh1ita5VKYL8ynf/GjZuStfMgoDQ4EUs1P0S_JdPVim-shv2/-rJQLy2jujZSHmJgjlgJTuYzQxF6yqfI/pP-68pxANJg7b9sMHANewzo1iX_4ab6l/a98A-WM8YWVs-o8O6f0D6lh9gdTxGtKJ/WvlJU54LnAntBZ3Z9Z10wzoTsGXWeYEV/P_NAImIjACb8HBZ2hDP1QDvUr9Dn3xG5/iMjUvvGmmQO1IGRxvaatWDuFUWmRpfeA/0Qk4jRZnFU2OOyBwvT5er3VXytikNGeG/d3nbJZg3mVk.jpg",
+    "choices": [
+      {"label": "Помидоры (1 шт)", "price": "210"},
+      {"label": "Перец стручковый (1 шт)", "price": "150"},
+      {"label": "Баклажаны (1 шт)", "price": "270"},
+      {"label": "Острый перец свежий (1 шт)", "price": "270"}
+    ]
+  },
+  {
+    "name": "Куриные наггетсы с сырным соусом",
+    "description": "Наггетсы из куриного филе с сырным соусом.",
+    "price": "420",
+    "category": "Горячее",
+    "image_url": "https://i.wfolio.ru/x/Erhj60RfGoSDn6LYN1vjjheZsgmFENWg/70nl7vp0vtA5I_3875z-74SYoU4uutGd/xstRKgtuKfAuaesT0g7GCj5r5jVhYYJO/czeCPV64a88WPNVdvAGyHihjk55jsR3q/fDWeOlbRKvFPIbN5Tc6YUsyZS-b90JuD/zBNyHXOjg-RczmtPGhlGv_kfwrfhlgdq/9vsmwW-CzmBcQntlWtliWJPDAmp0njfH/q1aYzK14kThA6UvxmrIfivT-KVEQG10G/l4RBzQ_eK9tUE-wk--3AB9NcVtllKrcJ/OFVxaqGk01yewNh0tsUa9SMuk7WtEpF4/xW_b_xGnP5PCKYRAvqGHgGdTbuhDQLmj/md9rQMj5bIovidsrHbqVG_WM19jzLzZy/Nj1dIpBO_UnG-p5WQ0_4xO3CAU-I-8GH/rGMIyC05It17AuTs-LN0bq01tpXlxO3_/VSH9WkMd6H9-4zziuCuRBm3ykhB-6mkG/f5wvH0_UQCMV5-6YJ0M6pepU1zjpQXId/Dso9atYIiTDHI0VE1Yj0QfnvoDZINpjO/hrQ04HtMe5A.jpg"
+  },
+  {
+    "name": "Молодой картофель",
+    "description": "Молодой картофель на гриле с зеленью.",
+    "price": "230",
+    "category": "Гарниры",
+    "image_url": "https://i.wfolio.ru/x/Sjpgrm2v20FR6Cth5viRk6Iir5aoqG4h/ZXWGJmu7EQlhnv6D9ELHSMzGOBuFicXp/OGcM34slpvmXTMkbuJagSV1xA4akZdWt/iGTrK_jx2PJdzPpMyVlbGIyR5mAu9UqG/rL-5DUxboiaoOuXyk54XGX-OT-NQ5DIt/t4cadjULppTx1gEZEyG7Eqk7p-JphqNA/E-VjBOssplpcT44Fqigxab1SM3EHSrfa/U4UZrdXN1szhc66D2tDiZuIGXN9MT8VC/iDb7e4k84EwljCj8kHh1imNzLsex23GD/_ZzqH8QXZmwXcZ5pYzuQyFdA_20LcrRR/u3BE-8egdVurZcnIxU0HdfEDgtOvEY_Z/RiRFExSV-ZyXNii8f9r2POFJdUnj2NyK/GvxG1C1d6KpNpawjbkNUyfhYFItsDrLP/6TXL3arLXpPUFsw6nBhK0PJdzVFyEvSt/Z7UCWgth_vJ1HCMn67tTrFQMqaIWfqmd/Dt5KK8lV38KVUL8yVT1Hh75772tzFUjI/uAjAjyVHxoICrJ27Jv2a9rM0UvW8exPM/uYv_PPtqbf0.jpg"
+  },
+  {
+    "name": "Ассорти овощей на гриле",
+    "description": "Сезонные овощи на углях: перец, помидоры, баклажаны.",
+    "price": "300",
+    "category": "Гарниры",
+    "image_url": "https://i.wfolio.ru/x/Sjpgrm2v20FR6Cth5viRk6Iir5aoqG4h/ZXWGJmu7EQlhnv6D9ELHSMzGOBuFicXp/OGcM34slpvmXTMkbuJagSV1xA4akZdWt/iGTrK_jx2PJdzPpMyVlbGIyR5mAu9UqG/rL-5DUxboiaoOuXyk54XGX-OT-NQ5DIt/t4cadjULppTx1gEZEyG7Eqk7p-JphqNA/E-VjBOssplpcT44Fqigxab1SM3EHSrfa/U4UZrdXN1szhc66D2tDiZuIGXN9MT8VC/iDb7e4k84EwljCj8kHh1ig4KhVtzqAyc/HeuVLsRnmdHnz3ESx51Uf4UX18JOngM-/E5c7rwtw7iYcmsZIQ7LLVzPqgv8mJ5IZ/bucE6s_tQ5stRn-gG965L56mKFuGO2v1/GeEVla7vi6JY5Vv64uP6w8BmMjNeSKqj/45DDPtMmThNyBhD7uUiItQaYmzz4t0df/VwSNoekvcYXwM4JQvTFKP41OWmRuG9wR/OXMyFNPtKM_QnEq9hgeOVzXpbepXiVuJ/SLf3xIrtr_UKZMzcHR4eFpXwRocE8mes/Q56NgJXGS0A.jpg"
+  },
+  {
+    "name": "Сосиски к пиву",
+    "description": "Сосиски на гриле — закуска к пиву.",
+    "price": "600",
+    "category": "Закуски",
+    "image_url": "https://i.wfolio.ru/x/KfN2JhbB89-m6UeUSQ-43b-4LTDPyZVn/q6sVLUvjujnOk6mXbO2srbIKpPlcOqy0/t7rVx8PT5NFW95R5iPfYgEbcz9T9DM03/mjHu5nb3MiY0pLaVSfnIEvvsgGTLYWd3/DB3ADSLxnrANMZCME7ysO72kBFQhyM26/hYMR0lODNdOVDM1a-FvOy3aHq_yLHX9R/scyVvy8F_kGSmCsUPJvjGfJEKg96ZOcN/k9OQYqdsnBkS447GKluQSjqbvsXK0Yms/iXm01OGU5yomNA9Sin7GpHzGBX44lCWp/8eO5RvqEF_CLe8T3Hm14HAY4Lqynf5hw/TgyE58DZx5QN0M2ysUF_nc3SUSaFaCxU/BLAJXP31qcHUNY_SBJM9QLrslfAjtnue/RopaKBkllXzEu3KvEPZWg3xFi3z2H_Ac/i4rELFZCinvF362CU3H6I7JlNS8NXJ7I/XAZNTI5ssZHnNosuF6kkbtOHvD8AB5-8/nBVnNsDWf-Aij2bxD1F_iPC7dxecLRkT/A_eGSlbHwMnfYalD5XUg-4ppfrlJOCxH/nwvY_KfyymU.jpg"
+  },
+  {
+    "name": "Большой сет к пиву",
+    "description": "Сытная закуска к пиву: мясо, снеки и соусы.",
+    "price": "860",
+    "category": "Закуски",
+    "image_url": "https://i.wfolio.ru/x/Erhj60RfGoSDn6LYN1vjjheZsgmFENWg/70nl7vp0vtA5I_3875z-74SYoU4uutGd/xstRKgtuKfAuaesT0g7GCj5r5jVhYYJO/czeCPV64a88WPNVdvAGyHihjk55jsR3q/fDWeOlbRKvFPIbN5Tc6YUsyZS-b90JuD/zBNyHXOjg-RczmtPGhlGv_kfwrfhlgdq/9vsmwW-CzmBcQntlWtliWJPDAmp0njfH/q1aYzK14kThA6UvxmrIfivT-KVEQG10G/l4RBzQ_eK9tUE-wk--3AByHKOV3tLpLr/uGC14laCzfwLLUzS1arggeC1nT3DG17Z/SmOExmqw08P19Bh5uyW7anDvyg5FexX9/7F_U61io2-VtKyTEmhombJxfmWnDU-RR/41T9g3AlqEPgJyrIh7OyN4zl1Tg6H0Sy/Jm9G_bjmgZ_dJA1US9dVm5sS_TIUrQEB/6HpGQhsfhJrcwbT24qiJG1HheE4ucRUl/Nqo22r5Ty-IA6pqhm0E_5TNecRoJD8dA/tEDMZzGghmcixp3Ozn-IiI-vkhww1090/2VbD48KJbWw.jpg"
+  },
+  {
+    "name": "Шампиньоны на гриле",
+    "description": "Шампиньоны на углях с ароматными специями.",
+    "price": "340",
+    "category": "Гарниры",
+    "image_url": "https://i.wfolio.ru/x/Sjpgrm2v20FR6Cth5viRk6Iir5aoqG4h/ZXWGJmu7EQlhnv6D9ELHSMzGOBuFicXp/OGcM34slpvmXTMkbuJagSV1xA4akZdWt/iGTrK_jx2PJdzPpMyVlbGIyR5mAu9UqG/rL-5DUxboiaoOuXyk54XGX-OT-NQ5DIt/t4cadjULppTx1gEZEyG7Eqk7p-JphqNA/E-VjBOssplpcT44Fqigxab1SM3EHSrfa/U4UZrdXN1szhc66D2tDiZuIGXN9MT8VC/iDb7e4k84EwljCj8kHh1itVVTqZm-XIQ/06PFGV3-iuFsApA9-hrAlmASxAMLXPdv/o5tf1PZqF5ckXkpCjOwAKh5nBcyJXFVY/E7lt2Cg4CtMWGTvw_STew5XTB_fShB6C/XP9eZwWl4q6nYElUrtK3HhCfmZOe8wG7/pSuTz-WpDZ1ThDPljjOgDEljVcP8PtSq/gNnQI0am0wVPfS0wQzeVf2kuz3dP84WU/jh2z8BZBBlTcwgscU9_PyGsGbduP58OH/chV5w4f281fQeDU1dxwK_2jOcXsbpF5x/sfDTYKMTyrE.jpg"
+  },
+  {
+    "name": "Ассорти шашлыков",
+    "description": "Набор шашлыков из разных видов мяса — для большой компании.",
+    "price": "4500",
+    "category": "Горячее",
+    "image_url": "https://i.wfolio.ru/x/Erhj60RfGoSDn6LYN1vjjheZsgmFENWg/70nl7vp0vtA5I_3875z-74SYoU4uutGd/xstRKgtuKfAuaesT0g7GCj5r5jVhYYJO/czeCPV64a88WPNVdvAGyHihjk55jsR3q/fDWeOlbRKvFPIbN5Tc6YUsyZS-b90JuD/zBNyHXOjg-RczmtPGhlGv_kfwrfhlgdq/9vsmwW-CzmBcQntlWtliWJPDAmp0njfH/q1aYzK14kThA6UvxmrIfivT-KVEQG10G/l4RBzQ_eK9tUE-wk--3AB7VmdyRkGoPN/8ScFDhTMZJT6s1pJ31od3DefoCZGMfY0/_fPn1b_P3AF7MinQ5VihaSdl81oShu_m/EJ_0936smYDEaR78TNo_84C-xJ3U4Kr_/yOpxiPnsAjllGOOuLyeXFiiaKdMwtvCi/TrZ-JjfsCWGw-e3Jr94aSmx2QYgAq0qv/wNlBN7FnDaQekTVSRlGwfn8VH3m4X1iq/aTO5BHRZ5o1hVkUQEPvarwu3ZigRwBxf/dyM4euXEC7YrvDh6XQ_N7qJLlHgBGFkj/egYPy-qLCOE.jpg"
+  },
+  {
+    "name": "Суп пити",
+    "description": "Ароматный суп пити с бараниной и специями.",
+    "price": "580",
+    "category": "Супы",
+    "image_url": "https://i.wfolio.ru/x/Sjpgrm2v20FR6Cth5viRk6Iir5aoqG4h/ZXWGJmu7EQlhnv6D9ELHSMzGOBuFicXp/OGcM34slpvmXTMkbuJagSV1xA4akZdWt/iGTrK_jx2PJdzPpMyVlbGIyR5mAu9UqG/rL-5DUxboiaoOuXyk54XGX-OT-NQ5DIt/t4cadjULppTx1gEZEyG7Eqk7p-JphqNA/E-VjBOssplpcT44Fqigxab1SM3EHSrfa/U4UZrdXN1szhc66D2tDiZuIGXN9MT8VC/iDb7e4k84EwljCj8kHh1ilH81qwONMJA/vziJ1eyuz9Tr4wFpy83ZbORlBlsGg6lw/OR6dMvplu4R0OJiZfTGEu7PxqiAKDNor/Xu4qFfqew9YioPy7rE6rBr-hZnNMBbtz/rJjroddHfOdLSOG42FXKob9tCqK23q0M/Q865ZdSU-NIdEwB535fRmVj5GU3dlVOZ/WXc3wp9zdGbxA3dDloYxa84UlVDp6fTB/P1Dj2karlpRlzrE4DZTz-ZHJcMsQX8Xm/8bIkI64qk9cqg8jaks6PnGVtTOvvHKGI/dnKxQ29zQBw.jpg"
+  },
+  {
+    "name": "Шашлык из бедра курицы",
+    "description": "Шашлык из куриного бедра с луком и зеленью.",
+    "price": "450",
+    "category": "Горячее",
+    "image_url": "https://i.wfolio.ru/x/Sjpgrm2v20FR6Cth5viRk6Iir5aoqG4h/ZXWGJmu7EQlhnv6D9ELHSMzGOBuFicXp/OGcM34slpvmXTMkbuJagSV1xA4akZdWt/iGTrK_jx2PJdzPpMyVlbGIyR5mAu9UqG/rL-5DUxboiaoOuXyk54XGX-OT-NQ5DIt/t4cadjULppTx1gEZEyG7Eqk7p-JphqNA/E-VjBOssplpcT44Fqigxab1SM3EHSrfa/U4UZrdXN1szhc66D2tDiZuIGXN9MT8VC/iDb7e4k84EwljCj8kHh1ihDpJfngpbgr/FmM2iyqoBApP5CngR-kMLEEiWAQaOdZI/VfBaxLOH_uLWO-HZHOhzUQnx7NayoxYm/xw5jmYUqzkkMHq5xjEpsuPLMKXiSHUVV/4NROziZxRGlucp0QOHJ1yBmUtKPD4Dt3/J2HeOvDhIj6L_YNodWE2-7pBHEEeJr2f/WhbEt256KVEbkqT3XJ2lohItJrP55ggp/b3T4ZTtcudImonBhS1SGgDEK7YA320DL/MwSelTVslMX2pFWqeRHVUV1v5ttEImop/JswWxaSXgVw.jpg"
+  },
+  {
+    "name": "Оливье с говядиной",
+    "description": "Классический оливье с отварной говядиной.",
+    "price": "440",
+    "category": "Салаты",
+    "image_url": "https://i.wfolio.ru/x/KfN2JhbB89-m6UeUSQ-43b-4LTDPyZVn/q6sVLUvjujnOk6mXbO2srbIKpPlcOqy0/t7rVx8PT5NFW95R5iPfYgEbcz9T9DM03/mjHu5nb3MiY0pLaVSfnIEvvsgGTLYWd3/DB3ADSLxnrANMZCME7ysO72kBFQhyM26/hYMR0lODNdOVDM1a-FvOy3aHq_yLHX9R/scyVvy8F_kGSmCsUPJvjGfJEKg96ZOcN/k9OQYqdsnBkS447GKluQSjqbvsXK0Yms/iXm01OGU5yomNA9Sin7GpHViVYXR0Kmg/ob9TkItkkY8VJ1IPuZ3pcWALFGL_QKai/olcHrkXOaYkzqPrNnSYs9xKMW-M3yiwd/jSv8NMHkdN-fZ-xHK4qCoapuvZ-3oMRM/UoAua5JEpx9iIoOgC2xBDPk91qgULxmK/Y0EbDoIhqYEaPdkSDAb0wUTWS5AF_WCa/AvVo1e4XaTUSTp5LRoVxvZMpCapI4uqY/PItgD5wgDkU5T9YLooiZneUkyxGZK-Mn/gDqasZK6rqvCk71QR4lxq9WdLg0reaep/xIx7JH5Cwjw.jpg"
+  },
+  {
+    "name": "Пахлава",
+    "description": "Восточная пахлава с орехами и сиропом.",
+    "price": "290",
+    "category": "Выпечка",
+    "image_url": "https://i.wfolio.ru/x/Erhj60RfGoSDn6LYN1vjjheZsgmFENWg/70nl7vp0vtA5I_3875z-74SYoU4uutGd/xstRKgtuKfAuaesT0g7GCj5r5jVhYYJO/czeCPV64a88WPNVdvAGyHihjk55jsR3q/fDWeOlbRKvFPIbN5Tc6YUsyZS-b90JuD/zBNyHXOjg-RczmtPGhlGv_kfwrfhlgdq/9vsmwW-CzmBcQntlWtliWJPDAmp0njfH/q1aYzK14kThA6UvxmrIfivT-KVEQG10G/l4RBzQ_eK9tUE-wk--3ABwQbhaZrs9mC/abYy47oJJF9Aq27kIdBs-XX5ALuGS7S8/-lXnUO-TiGaHgWI9Q8j4Mzu7ZMFl5j0Q/gKug-SZrIqfUS6OxaosHZlaTSdUMN3AS/aPbFZ_ysG5jDUhaFDWdBZLtge1Bxxo6o/HqNWGY3jVNQ_boqSazT4VhaGE69WNGBz/fPpHbwtjfO9FeebcokMXdZBoBwth4Tnm/topvsN0ZlWDcEVvGUGn_sV0BKEuEauRU/8CZvCVn2VMSuaAIiViyCK2Qev8-PJMjQ/YbepbdwGfFM.jpg"
+  },
+  {
+    "name": "Пирожное Сникерс",
+    "description": "Пирожное с шоколадом, орехами и карамелью.",
+    "price": "450",
+    "category": "Выпечка",
+    "image_url": "https://main-cdn.sbermegamarket.ru/big1/hlr-system/-11/551/242/082/318/36/100029010777b0.jpg"
+  },
+  {
+    "name": "Яблочный штрудель",
+    "description": "Тёплый яблочный штрудель с корицей.",
+    "price": "400",
+    "category": "Выпечка",
+    "image_url": "https://i.ytimg.com/vi/JxBLQYDPvy0/maxresdefault.jpg"
+  },
+  {
+    "name": "Меренговый рулет",
+    "description": "Нежный рулет с воздушной меренгой и кремом.",
+    "price": "420",
+    "category": "Выпечка",
+    "image_url": "https://cdn.food.ru/unsigned/fit/640/480/ce/0/czM6Ly9tZWRpYS9waWN0dXJlcy9yZWNpcGVzLzE1NjM0Mi9zdGVwcy8zcHNXM1kuanBlZw.jpg"
+  },
+  {
+    "name": "Печень по-королевски",
+    "description": "Печень в сливочном соусе с луком — сытное горячее блюдо.",
+    "price": "590",
+    "category": "Горячее",
+    "image_url": "https://i.wfolio.ru/x/Sjpgrm2v20FR6Cth5viRk6Iir5aoqG4h/ZXWGJmu7EQlhnv6D9ELHSMzGOBuFicXp/OGcM34slpvmXTMkbuJagSV1xA4akZdWt/iGTrK_jx2PJdzPpMyVlbGIyR5mAu9UqG/rL-5DUxboiaoOuXyk54XGX-OT-NQ5DIt/t4cadjULppTx1gEZEyG7Eqk7p-JphqNA/E-VjBOssplpcT44Fqigxab1SM3EHSrfa/U4UZrdXN1szhc66D2tDiZuIGXN9MT8VC/iDb7e4k84EwljCj8kHh1isTHLiGFzibX/dza-Md6qUWwebZz-pSy7OqoLwJuL_bUo/e7HuB-JK3O9_i6NaMOd5WiusNTCmzEZF/Bt4SB8_lUHOsLHrSy6jMeb-xM3Mo0YTq/OMypl2jUK0HhWPDQHnTPXYKVf6-VPIN7/Nc-fCZzSHu8hQa2wBpbi6kFjS7MsOR9g/fzwf5d_G3b8wHJnLDAIwbwR0NJLQVP_f/vORZeaVi77RMCsppYpVcTaQ1edHlCEZq/PGORV-oYMrq-23tXj1x7EA1oid_6HTg7/LgcYTaNcjHU.jpg"
+  },
+  {
+    "name": "Морс клюквенный домашний, 1 л",
+    "description": "Домашний клюквенный морс, 1 литр.",
+    "price": "350",
+    "category": "Напитки",
+    "image_url": "https://i.wfolio.ru/x/KfN2JhbB89-m6UeUSQ-43b-4LTDPyZVn/q6sVLUvjujnOk6mXbO2srbIKpPlcOqy0/t7rVx8PT5NFW95R5iPfYgEbcz9T9DM03/mjHu5nb3MiY0pLaVSfnIEvvsgGTLYWd3/DB3ADSLxnrANMZCME7ysO72kBFQhyM26/hYMR0lODNdOVDM1a-FvOy3aHq_yLHX9R/scyVvy8F_kGSmCsUPJvjGfJEKg96ZOcN/k9OQYqdsnBkS447GKluQSjqbvsXK0Yms/iXm01OGU5yomNA9Sin7GpIFLQZqu-5UH/Ibh8VhfX2X1WCXAonMZiN6TnD0-okbDX/80PLax_jjvByPQpsLal79LE0fitmdIHv/wGuSHpli75110x8LdBgHrmLItAKrO5ff/jo0uG1Qh5uAQXh48nEFnzFwTCxByJx37/PKSL6LHrfMviasJp25O-EJ8YRf1qr997/o6CirSedxMKz5aDfekoP_Bsndbqk1i00/_HSi8PQzIhAjoidFDha_mcFsfcjNg69X/OWgYpLJh3gQ6ITpNeaq8IUDTuQV57dw3/WfbVKYyVKY4.jpg"
+  },
+  {
+    "name": "Лимонад домашний, 1 л",
+    "description": "Освежающий домашний лимонад, 1 литр.",
+    "price": "430",
+    "category": "Напитки",
+    "image_url": "https://i.wfolio.ru/x/KfN2JhbB89-m6UeUSQ-43b-4LTDPyZVn/q6sVLUvjujnOk6mXbO2srbIKpPlcOqy0/t7rVx8PT5NFW95R5iPfYgEbcz9T9DM03/mjHu5nb3MiY0pLaVSfnIEvvsgGTLYWd3/DB3ADSLxnrANMZCME7ysO72kBFQhyM26/hYMR0lODNdOVDM1a-FvOy3aHq_yLHX9R/scyVvy8F_kGSmCsUPJvjGfJEKg96ZOcN/k9OQYqdsnBkS447GKluQSjqbvsXK0Yms/iXm01OGU5yomNA9Sin7GpGceM9JGn4lS/JORGh_v4zpOQNa0Bf5BO6zalu8xSzsw0/BYOWV6-eRFiMEnLyEvyXaCStd3n376Dj/skht5Rbq4IrcYyhMfwHaWnW_OJm8hSY5/BjlFo6Y-zhV-3BBtcPEQ2oiMTKT8U3fi/cMh8pVFAzrM-2o_1-giSlsVUkDLfQ4-b/XQDaCkCohDdrMD4GiDbB2jrM_eWseU8m/oHIFP47kYqfFscqUIkmv-cZsC5dlVTUc/aBWwmvr7YGM4G20D4Bmoiiw1F3rnnidz/ZIBY10zJSh8.jpg"
+  },
+  {
+    "name": "Лимонад Натахтари, 0,5 л",
+    "description": "Лимонад Натахтари, 0,5 литра.",
+    "price": "240",
+    "category": "Напитки",
+    "image_url": "https://avatars.mds.yandex.net/get-mpic/20143262/2a0000019dd8b8c37307a0a34dadeb2f0d77/orig"
+  },
+  {
+    "name": "Кола, Фанта, Спрайт, 0,5 л",
+    "description": "Газированные напитки на выбор, 0,5 литра.",
+    "price": "240",
+    "category": "Напитки",
+    "image_url": "https://cdn.smt.bz/uploads/media/photo/7947303/fc66a90a8613faffa20bf5a4b41eb159.webp",
+    "choices": [
+      {"label": "Кола", "price": "240"},
+      {"label": "Фанта", "price": "240"},
+      {"label": "Спрайт", "price": "240"}
+    ]
+  },
+  {
+    "name": "Боржоми, 0,5 л",
+    "description": "Минеральная вода Боржоми, 0,5 литра.",
+    "price": "240",
+    "category": "Напитки",
+    "image_url": "https://s3.ibta.ru/goods/620503/e6dcc07953389cb578b404df1a6f5198_xl.jpg"
+  },
+  {
+    "name": "Сок «Добрый», 1 л",
+    "description": "Сок «Добрый», 1 литр.",
+    "price": "300",
+    "category": "Напитки",
+    "image_url": "https://avatars.mds.yandex.net/get-mpic/16902283/2a00000198898f8143a25a7dab73592c9a09/orig"
+  },
+  {
+    "name": "Сыр из овечьего молока",
+    "description": "Нежный сыр из овечьего молока с характерным вкусом.",
+    "price": "490",
+    "category": "Закуски",
+    "image_url": "https://i.wfolio.ru/x/Sjpgrm2v20FR6Cth5viRk6Iir5aoqG4h/ZXWGJmu7EQlhnv6D9ELHSMzGOBuFicXp/OGcM34slpvmXTMkbuJagSV1xA4akZdWt/iGTrK_jx2PJdzPpMyVlbGIyR5mAu9UqG/rL-5DUxboiaoOuXyk54XGX-OT-NQ5DIt/t4cadjULppTx1gEZEyG7Eqk7p-JphqNA/E-VjBOssplpcT44Fqigxab1SM3EHSrfa/U4UZrdXN1szhc66D2tDiZuIGXN9MT8VC/iDb7e4k84EwljCj8kHh1isHBNkrhmMfa/6KVQ9IBimKJQ3K2GkTe0r6FqKK4jUPuy/otF9Xv0S74wCWN3MQzgnZzuv4YGZkuXm/WzKHrYUoh7St8PrAZuf-hVlMLA53XGS9/bPZ1P-H2rPJsm48KfYOUcdzPXcJr4Gnf/RciJuEtwLiK1ukv0-oDQgYA6JkhyAwxk/A0erHaUwXENWO_vMMSl-2GurtlHmSWa9/WlX3nK1Ke8jn_uGbWQ3yV0ucir25Tzw4/bIkOI1kLomlo3F1XNpnEd5fEWNIrX8ou/zL1OASdOmhk.jpg"
+  }
+]

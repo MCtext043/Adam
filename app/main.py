@@ -1,6 +1,7 @@
 import json
 import os
 import secrets
+import zlib
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -42,7 +43,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from passlib.context import CryptContext
 from pydantic import BaseModel, EmailStr, Field, field_validator
-from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, Text, create_engine, func, select, text
+from sqlalchemy import BigInteger, DateTime, ForeignKey, Integer, Numeric, String, Text, create_engine, func, select, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship, selectinload, sessionmaker
 from starlette.middleware.sessions import SessionMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
@@ -192,12 +193,15 @@ class Product(Base):
     __tablename__ = "products"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    vk_id: Mapped[int | None] = mapped_column(BigInteger, unique=True, nullable=True)
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     category: Mapped[str] = mapped_column(String(80), nullable=False)
-    image_url: Mapped[str] = mapped_column(String(500), nullable=False)
+    image_url: Mapped[str] = mapped_column(Text, nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
+    is_stopped: Mapped[bool] = mapped_column(default=False, nullable=False)
+    choices_json: Mapped[str] = mapped_column(Text, default="[]", server_default="[]", nullable=False)
 
 
 class Order(Base):
@@ -254,6 +258,7 @@ class OrderItem(Base):
 class CartItemIn(BaseModel):
     product_id: int
     quantity: int = Field(ge=1, le=50)
+    choice_label: str | None = None
 
 
 class OrderCreate(BaseModel):
@@ -283,6 +288,10 @@ class AdminSettingsUpdate(BaseModel):
     min_order_amount: float = Field(ge=0, le=1_000_000)
     free_delivery_threshold: float = Field(ge=0, le=1_000_000)
     delivery_price_per_km: float = Field(ge=0, le=10_000)
+
+
+class ProductStopListUpdate(BaseModel):
+    is_stopped: bool
 
 
 class DeliveryEstimateIn(BaseModel):
@@ -327,7 +336,7 @@ def migrate_schema() -> None:
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS loyalty_points_earned INTEGER NOT NULL DEFAULT 0",
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS loyalty_points_spent INTEGER NOT NULL DEFAULT 0",
         "ALTER TABLE customers ADD COLUMN IF NOT EXISTS loyalty_points INTEGER NOT NULL DEFAULT 0",
-        "ALTER TABLE products ALTER COLUMN image_url TYPE VARCHAR(500)",
+        "ALTER TABLE products ALTER COLUMN image_url TYPE TEXT",
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) NOT NULL DEFAULT 'none'",
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS qrc_id VARCHAR(80) NOT NULL DEFAULT ''",
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS elplat_ebl27 VARCHAR(80) NOT NULL DEFAULT ''",
@@ -336,6 +345,9 @@ def migrate_schema() -> None:
         "ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_distance_km NUMERIC(6, 2) NOT NULL DEFAULT 0",
         "ALTER TABLE app_settings ADD COLUMN IF NOT EXISTS free_delivery_threshold NUMERIC(10, 2) NOT NULL DEFAULT 3000",
         "ALTER TABLE app_settings ADD COLUMN IF NOT EXISTS delivery_price_per_km NUMERIC(10, 2) NOT NULL DEFAULT 45",
+        "ALTER TABLE products ADD COLUMN IF NOT EXISTS vk_id BIGINT UNIQUE",
+        "ALTER TABLE products ADD COLUMN IF NOT EXISTS is_stopped BOOLEAN NOT NULL DEFAULT false",
+        "ALTER TABLE products ADD COLUMN IF NOT EXISTS choices_json TEXT NOT NULL DEFAULT '[]'",
     ]
     with engine.begin() as conn:
         for stmt in stmts:
@@ -420,30 +432,92 @@ def _is_real_vk_product(raw: dict) -> bool:
     return True
 
 
+def _synthetic_vk_id(name: str) -> int:
+    digest = zlib.crc32(_normalize_product_name(name).encode("utf-8")) & 0x7FFFFFFF
+    return -(digest + 1)
+
+
+def _parse_product_choices(raw: str) -> list[dict]:
+    if not raw or raw == "[]":
+        return []
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return []
+    return data if isinstance(data, list) else []
+
+
+def _menu_item_from_raw(raw: dict) -> dict:
+    name = raw["name"].strip()
+    description = (raw.get("description") or name).strip()[:2000]
+    category = (raw.get("category") or "").strip()
+    if category in ("", "Меню"):
+        category = categorize_menu_item(name, description)
+    vk_id_raw = raw.get("vk_id")
+    vk_id = int(vk_id_raw) if vk_id_raw else _synthetic_vk_id(name)
+    choices = raw.get("choices") or []
+    choices_json = json.dumps(choices, ensure_ascii=False) if choices else "[]"
+    if choices:
+        price = min(Decimal(str(c["price"])) for c in choices)
+    else:
+        price = Decimal(str(raw["price"]))
+    return {
+        "vk_id": vk_id,
+        "name": name,
+        "description": description,
+        "price": price,
+        "category": category,
+        "image_url": _upgrade_vk_image_url(raw["image_url"]),
+        "is_active": True,
+        "choices_json": choices_json,
+    }
+
+
 def load_vk_menu_items() -> list[dict]:
     if not VK_MENU_PATH.is_file():
         return []
     data = json.loads(VK_MENU_PATH.read_text(encoding="utf-8"))
-    items = []
+    by_vk_id: dict[int, dict] = {}
     for raw in data:
         if not _is_real_vk_product(raw):
             continue
-        name = raw["name"].strip()
-        description = (raw.get("description") or name).strip()[:2000]
-        category = (raw.get("category") or "").strip()
-        if category in ("", "Меню"):
-            category = categorize_menu_item(name, description)
-        items.append(
-            {
-                "name": name,
-                "description": description,
-                "price": Decimal(str(raw["price"])),
-                "category": category,
-                "image_url": _upgrade_vk_image_url(raw["image_url"]),
-                "is_active": True,
-            }
-        )
-    return items
+        item = _menu_item_from_raw(raw)
+        by_vk_id[item["vk_id"]] = item
+    return list(by_vk_id.values())
+
+
+def _normalize_product_name(name: str) -> str:
+    normalized = name.lower().strip()
+    normalized = normalized.replace("—", "-").replace("–", "-")
+    normalized = " ".join(normalized.replace("-", " ").split())
+    return normalized
+
+
+def _dedupe_active_products(session: Session, menu_items: list[dict]) -> int:
+    """Deactivate extra active rows that share the same menu name (stale imports)."""
+    active = session.scalars(select(Product).where(Product.is_active.is_(True))).all()
+    by_name: dict[str, list[Product]] = {}
+    for product in active:
+        by_name.setdefault(_normalize_product_name(product.name), []).append(product)
+
+    menu_by_name = {_normalize_product_name(item["name"]): item for item in menu_items}
+    changed = 0
+
+    for norm_name, products in by_name.items():
+        if len(products) <= 1:
+            continue
+        menu_item = menu_by_name.get(norm_name)
+        keeper: Product | None = None
+        if menu_item and menu_item.get("vk_id"):
+            keeper = next((p for p in products if p.vk_id == menu_item["vk_id"]), None)
+        if keeper is None:
+            keeper = min(products, key=lambda p: p.id)
+        for product in products:
+            if product.id != keeper.id:
+                product.is_active = False
+                changed += 1
+
+    return changed
 
 
 def import_vk_products(session: Session) -> int:
@@ -451,27 +525,58 @@ def import_vk_products(session: Session) -> int:
     if not menu_items:
         return 0
 
-    by_name = {p.name: p for p in session.scalars(select(Product)).all()}
-    vk_names = {item["name"] for item in menu_items}
+    products = session.scalars(select(Product)).all()
+    by_vk_id = {p.vk_id: p for p in products if p.vk_id is not None}
+    by_name = {p.name: p for p in products}
+    by_norm_name: dict[str, list[Product]] = {}
+    for product in products:
+        by_norm_name.setdefault(_normalize_product_name(product.name), []).append(product)
+    menu_vk_ids = {item["vk_id"] for item in menu_items}
     changed = 0
 
     for item in menu_items:
-        product = by_name.get(item["name"])
+        vk_id = item["vk_id"]
+        product = by_vk_id.get(vk_id)
         if product is None:
-            session.add(Product(**item))
-            changed += 1
-            continue
-        product.description = item["description"]
-        product.price = item["price"]
-        product.category = item["category"]
-        product.image_url = item["image_url"]
-        product.is_active = True
-        changed += 1
+            product = by_name.get(item["name"])
+        if product is None:
+            norm = _normalize_product_name(item["name"])
+            matches = by_norm_name.get(norm, [])
+            if matches:
+                product = min(matches, key=lambda p: p.id)
 
-    for product in by_name.values():
-        if product.name not in vk_names and product.is_active:
+        if product is None:
+            product = Product(**item)
+            session.add(product)
+            session.flush()
+            changed += 1
+        else:
+            old_name = product.name
+            if old_name != item["name"]:
+                by_name.pop(old_name, None)
+                product.name = item["name"]
+            product.description = item["description"]
+            product.price = item["price"]
+            product.category = item["category"]
+            product.image_url = item["image_url"]
+            product.is_active = True
+            product.vk_id = vk_id
+            product.choices_json = item.get("choices_json", "[]")
+            changed += 1
+
+        by_vk_id[product.vk_id] = product
+        by_name[product.name] = product
+        norm = _normalize_product_name(product.name)
+        norm_list = by_norm_name.setdefault(norm, [])
+        if all(p.id != product.id for p in norm_list):
+            norm_list.append(product)
+
+    for product in products:
+        if product.vk_id not in menu_vk_ids and product.is_active:
             product.is_active = False
             changed += 1
+
+    changed += _dedupe_active_products(session, menu_items)
 
     return changed
 
@@ -711,7 +816,11 @@ def admin_update_settings(payload: AdminSettingsUpdate, request: Request, db: Db
 
 @app.get("/api/products")
 def list_products(db: Db) -> list[dict]:
-    products = db.scalars(select(Product).where(Product.is_active.is_(True)).order_by(Product.category, Product.id)).all()
+    products = db.scalars(
+        select(Product)
+        .where(Product.is_active.is_(True), Product.is_stopped.is_(False))
+        .order_by(Product.category, Product.id)
+    ).all()
     return [
         {
             "id": product.id,
@@ -720,9 +829,46 @@ def list_products(db: Db) -> list[dict]:
             "price": float(product.price),
             "category": product.category,
             "image_url": product.image_url,
+            "choices": _parse_product_choices(product.choices_json),
         }
         for product in products
     ]
+
+
+@app.get("/api/admin/products")
+def admin_list_products(request: Request, db: Db) -> list[dict]:
+    require_admin(request)
+    products = db.scalars(
+        select(Product).where(Product.is_active.is_(True)).order_by(Product.category, Product.name, Product.id)
+    ).all()
+    return [
+        {
+            "id": product.id,
+            "name": product.name,
+            "category": product.category,
+            "price": float(product.price),
+            "is_stopped": product.is_stopped,
+        }
+        for product in products
+    ]
+
+
+@app.patch("/api/admin/products/{product_id}/stop-list")
+def admin_update_stop_list(product_id: int, payload: ProductStopListUpdate, request: Request, db: Db) -> dict:
+    require_admin(request)
+    product = db.get(Product, product_id)
+    if product is None or not product.is_active:
+        raise HTTPException(status_code=404, detail="Позиция не найдена")
+    product.is_stopped = payload.is_stopped
+    db.commit()
+    db.refresh(product)
+    return {
+        "id": product.id,
+        "name": product.name,
+        "category": product.category,
+        "price": float(product.price),
+        "is_stopped": product.is_stopped,
+    }
 
 
 @app.get("/api/auth/me")
@@ -784,7 +930,13 @@ def auth_logout(request: Request) -> dict:
 @app.post("/api/orders", status_code=status.HTTP_201_CREATED)
 async def create_order(payload: OrderCreate, request: Request, db: Db) -> dict:
     product_ids = [item.product_id for item in payload.items]
-    products = db.scalars(select(Product).where(Product.id.in_(product_ids), Product.is_active.is_(True))).all()
+    products = db.scalars(
+        select(Product).where(
+            Product.id.in_(product_ids),
+            Product.is_active.is_(True),
+            Product.is_stopped.is_(False),
+        )
+    ).all()
     products_by_id = {product.id: product for product in products}
 
     order_items: list[OrderItem] = []
@@ -795,14 +947,29 @@ async def create_order(payload: OrderCreate, request: Request, db: Db) -> dict:
         if product is None:
             raise HTTPException(status_code=404, detail=f"Товар #{item.product_id} не найден")
 
-        line_total = product.price * item.quantity
+        choices = _parse_product_choices(product.choices_json)
+        if choices:
+            if not item.choice_label:
+                raise HTTPException(status_code=400, detail=f"Выберите вариант для «{product.name}»")
+            match = next((c for c in choices if c.get("label") == item.choice_label), None)
+            if match is None:
+                raise HTTPException(status_code=400, detail=f"Неверный вариант для «{product.name}»")
+            line_price = Decimal(str(match["price"]))
+            line_name = f"{product.name} ({item.choice_label})"
+        else:
+            if item.choice_label:
+                raise HTTPException(status_code=400, detail=f"Вариант не предусмотрен для «{product.name}»")
+            line_price = product.price
+            line_name = product.name
+
+        line_total = line_price * item.quantity
         total += line_total
         order_items.append(
             OrderItem(
                 product_id=product.id,
-                product_name=product.name,
+                product_name=line_name[:120],
                 quantity=item.quantity,
-                price=product.price,
+                price=line_price,
             )
         )
 
@@ -1086,6 +1253,20 @@ def _fetch_admin_orders(
     else:
         stmt = stmt.where(Order.created_at < start)
     return db.scalars(stmt.order_by(Order.id.desc())).unique().all()
+
+
+@app.get("/api/admin/orders/watch")
+def watch_orders(request: Request, db: Db, after: int = 0) -> dict:
+    require_admin(request)
+    orders = _fetch_admin_orders(db, today_only=True, exclude_done=False)
+    if not orders:
+        return {"latest_id": 0, "new_ids": [], "count": 0}
+    ids = [order.id for order in orders]
+    return {
+        "latest_id": max(ids),
+        "new_ids": [order_id for order_id in ids if order_id > after],
+        "count": len(ids),
+    }
 
 
 @app.get("/api/admin/orders")

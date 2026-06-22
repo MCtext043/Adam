@@ -49,15 +49,20 @@
       </form>
     </section>
 
-    <nav class="admin-tabs" aria-label="Разделы заказов">
+    <nav class="admin-tabs" aria-label="Разделы админ-панели">
       <button type="button" class="admin-tab is-active" data-admin-tab="today">Сегодня</button>
       <button type="button" class="admin-tab" data-admin-tab="archive">Архив</button>
+      <button type="button" class="admin-tab" data-admin-tab="stoplist">Стоп-лист</button>
     </nav>
 
     <section class="admin-orders-section" id="adminSectionToday">
       <div class="admin-toolbar">
         <p>Заказы за сегодня — кухня видит состав, телефон и адрес доставки.</p>
-        <button class="button button-dark" id="refreshOrders" type="button">Обновить</button>
+        <div class="admin-toolbar-actions">
+          <span class="admin-notify-status" id="adminNotifyStatus" hidden>Уведомления включены</span>
+          <button class="button button-ghost button-sm" id="enableNotifyBtn" type="button">Включить звук</button>
+          <button class="button button-dark" id="refreshOrders" type="button">Обновить</button>
+        </div>
       </div>
       <section class="orders-grid" id="orders"></section>
     </section>
@@ -69,11 +74,34 @@
       </div>
       <section class="orders-grid" id="ordersArchive"></section>
     </section>
+
+    <section class="admin-orders-section" id="adminSectionStoplist" hidden>
+      <div class="admin-toolbar">
+        <p>Позиции в стоп-листе не отображаются на сайте. Уберите из стоп-листа, когда блюдо снова в наличии.</p>
+        <button class="button button-dark" id="refreshStoplist" type="button">Обновить</button>
+      </div>
+      <label class="search-field stoplist-search">
+        Поиск по меню
+        <input id="stoplistSearch" type="search" placeholder="Название блюда…" autocomplete="off">
+      </label>
+      <div class="stoplist-grid">
+        <section class="stoplist-panel">
+          <h2 class="stoplist-heading">В меню</h2>
+          <div class="stoplist-items" id="stoplistAvailable"></div>
+        </section>
+        <section class="stoplist-panel stoplist-panel-muted">
+          <h2 class="stoplist-heading">Стоп-лист</h2>
+          <div class="stoplist-items" id="stoplistStopped"></div>
+        </section>
+      </div>
+    </section>
   </main>
+
+  <div id="toastHost" class="toast-host" aria-live="polite"></div>
 
   <script>
     window.ORDER_STATUSES = {{ statuses | tojson }};
   </script>
-  <script src="/static/js/admin.js?v=3"></script>
+  <script src="/static/js/admin.js?v=5"></script>
 </body>
 </html>

@@ -428,6 +428,16 @@ main {
   min-width: 0;
 }
 
+.product-card:has(.product-footer-choices),
+.product-card:has(.product-choice-panel) {
+  overflow: visible;
+}
+
+.product-card:has(.product-footer-choices) .product-content,
+.product-card:has(.product-choice-panel) .product-content {
+  overflow: visible;
+}
+
 .product-card img {
   display: block;
   width: 100%;
@@ -485,6 +495,86 @@ main {
   justify-content: space-between;
   gap: 14px;
   margin-top: 18px;
+}
+
+.product-footer-choices {
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.product-choice-panel {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(32, 25, 21, 0.1);
+}
+
+.product-choice-panel .product-footer-choices {
+  margin-top: 12px;
+}
+
+.choice-prompt {
+  margin: 0 0 10px;
+  color: var(--black);
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.product-choice-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.choice-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(32, 25, 21, 0.16);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--black);
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.choice-chip-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.choice-chip-price {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.choice-chip:hover {
+  border-color: rgba(32, 25, 21, 0.35);
+}
+
+.choice-chip.active {
+  border-color: var(--black);
+  background: rgba(32, 25, 21, 0.06);
+}
+
+.choice-chip.active .choice-chip-label {
+  font-weight: 700;
+}
+
+.button:disabled,
+.button.button-dark:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .price {
@@ -1253,6 +1343,78 @@ main {
   opacity: 0.6;
 }
 
+.stoplist-search {
+  margin-bottom: 18px;
+  max-width: 420px;
+}
+
+.stoplist-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.stoplist-panel {
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(32, 25, 21, 0.1);
+}
+
+.stoplist-panel-muted {
+  background: rgba(32, 25, 21, 0.04);
+}
+
+.stoplist-heading {
+  margin: 0 0 14px;
+  font-size: 1.1rem;
+}
+
+.stoplist-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stoplist-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid rgba(32, 25, 21, 0.08);
+}
+
+.stoplist-item-info {
+  min-width: 0;
+}
+
+.stoplist-item-name {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.stoplist-item-meta {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.stoplist-empty {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+@media (max-width: 900px) {
+  .stoplist-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .toast-host {
   position: fixed;
   right: 16px;
@@ -1711,6 +1873,28 @@ main {
 
 .admin-orders-section[hidden] {
   display: none !important;
+}
+
+.admin-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-notify-status {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  color: #166534;
+}
+
+.order-card-new {
+  box-shadow: 0 0 0 2px rgba(34, 139, 34, 0.35);
+}
+
+.toast-admin {
+  background: #166534;
+  font-weight: 600;
 }
 
 .order-meta-main h3 {

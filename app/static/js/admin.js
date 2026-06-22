@@ -10,10 +10,26 @@ const settingsMessage = document.querySelector("#settingsMessage");
 const adminPageTitle = document.querySelector("#adminPageTitle");
 const sectionToday = document.querySelector("#adminSectionToday");
 const sectionArchive = document.querySelector("#adminSectionArchive");
+const sectionStoplist = document.querySelector("#adminSectionStoplist");
 const tabButtons = document.querySelectorAll("[data-admin-tab]");
+const enableNotifyBtn = document.querySelector("#enableNotifyBtn");
+const adminNotifyStatus = document.querySelector("#adminNotifyStatus");
+const stoplistSearch = document.querySelector("#stoplistSearch");
+const stoplistAvailableEl = document.querySelector("#stoplistAvailable");
+const stoplistStoppedEl = document.querySelector("#stoplistStopped");
+const refreshStoplistBtn = document.querySelector("#refreshStoplist");
+
+const ORDER_POLL_MS = 15000;
 
 let activeTab = "today";
 let archiveLoaded = false;
+let stoplistLoaded = false;
+let stoplistProducts = [];
+let latestKnownOrderId = 0;
+let ordersWatchReady = false;
+let soundEnabled = false;
+let audioContext = null;
+let orderPollTimer = null;
 
 const statusLabels = {
   pending_payment: "Ожидает оплату",
@@ -41,6 +57,79 @@ function formatOrderDate(order) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function showToast(message) {
+  const host = document.getElementById("toastHost");
+  if (!host) return;
+  const el = document.createElement("div");
+  el.className = "toast toast-admin";
+  el.textContent = message;
+  host.appendChild(el);
+  requestAnimationFrame(() => el.classList.add("toast-visible"));
+  window.setTimeout(() => {
+    el.classList.remove("toast-visible");
+    window.setTimeout(() => el.remove(), 300);
+  }, 8000);
+}
+
+function getAudioContext() {
+  if (!audioContext) {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (Ctx) audioContext = new Ctx();
+  }
+  return audioContext;
+}
+
+function playTone(ctx, frequency, startAt, duration) {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "sine";
+  osc.frequency.value = frequency;
+  gain.gain.setValueAtTime(0.0001, startAt);
+  gain.gain.exponentialRampToValueAtTime(0.28, startAt + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(startAt);
+  osc.stop(startAt + duration + 0.05);
+}
+
+function playOrderSound() {
+  if (!soundEnabled) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const start = ctx.currentTime;
+  playTone(ctx, 880, start, 0.18);
+  playTone(ctx, 1175, start + 0.22, 0.22);
+  playTone(ctx, 880, start + 0.5, 0.18);
+}
+
+async function enableSoundNotifications() {
+  const ctx = getAudioContext();
+  if (ctx?.state === "suspended") {
+    await ctx.resume();
+  }
+  soundEnabled = true;
+  if (enableNotifyBtn) enableNotifyBtn.hidden = true;
+  if (adminNotifyStatus) adminNotifyStatus.hidden = false;
+  playOrderSound();
+}
+
+function notifyNewOrders(orderIds) {
+  if (!orderIds.length) return;
+  const label = orderIds.length === 1 ? `Новый заказ #${orderIds[0]}` : `Новые заказы: ${orderIds.map((id) => `#${id}`).join(", ")}`;
+  playOrderSound();
+  showToast(label);
+  if (document.hidden && "Notification" in window && Notification.permission === "granted") {
+    new Notification("Кафе Адам", { body: label });
+  }
+  document.title = `(${orderIds.length}) ${document.title.replace(/^\(\d+\)\s*/, "")}`;
+}
+
+function rememberLatestOrderId(orders) {
+  if (!orders.length) return;
+  latestKnownOrderId = Math.max(latestKnownOrderId, ...orders.map((order) => order.id));
 }
 
 function statusOptions(currentStatus) {
@@ -124,19 +213,53 @@ function renderOrders(orders, container, { emptyTitle, emptyText }) {
     .join("");
 }
 
-async function loadOrders() {
-  if (!ordersEl) return;
-  ordersEl.innerHTML = `<article class="order-card"><p>Загрузка заказов...</p></article>`;
+async function loadOrders({ silent = false } = {}) {
+  if (!ordersEl) return [];
+  if (!silent) {
+    ordersEl.innerHTML = `<article class="order-card"><p>Загрузка заказов...</p></article>`;
+  }
   const response = await fetch("/api/admin/orders", { credentials: "same-origin" });
   if (response.status === 401) {
     window.location.href = "/admin/login";
-    return;
+    return [];
   }
   const orders = await response.json();
   renderOrders(orders, ordersEl, {
     emptyTitle: "Заказов за сегодня нет",
     emptyText: "Новые заказы появятся здесь сразу после оформления на сайте.",
   });
+  rememberLatestOrderId(orders);
+  ordersWatchReady = true;
+  return orders;
+}
+
+async function pollForNewOrders() {
+  if (document.hidden || activeTab !== "today") return;
+  try {
+    const response = await fetch(`/api/admin/orders/watch?after=${latestKnownOrderId}`, {
+      credentials: "same-origin",
+    });
+    if (response.status === 401) {
+      window.location.href = "/admin/login";
+      return;
+    }
+    if (!response.ok) return;
+    const data = await response.json();
+    if (ordersWatchReady && data.new_ids?.length) {
+      notifyNewOrders(data.new_ids);
+      await loadOrders({ silent: true });
+    }
+    if (data.latest_id) {
+      latestKnownOrderId = Math.max(latestKnownOrderId, data.latest_id);
+    }
+  } catch {
+    // ignore transient network errors
+  }
+}
+
+function startOrderPolling() {
+  if (orderPollTimer) return;
+  orderPollTimer = window.setInterval(pollForNewOrders, ORDER_POLL_MS);
 }
 
 async function loadArchiveOrders() {
@@ -163,14 +286,116 @@ function setActiveTab(tab) {
 
   if (sectionToday) sectionToday.hidden = tab !== "today";
   if (sectionArchive) sectionArchive.hidden = tab !== "archive";
+  if (sectionStoplist) sectionStoplist.hidden = tab !== "stoplist";
 
   if (adminPageTitle) {
-    adminPageTitle.textContent = tab === "archive" ? "Архив заказов" : "Текущие заказы";
+    if (tab === "archive") adminPageTitle.textContent = "Архив заказов";
+    else if (tab === "stoplist") adminPageTitle.textContent = "Стоп-лист";
+    else adminPageTitle.textContent = "Текущие заказы";
   }
 
   if (tab === "archive" && !archiveLoaded) {
     loadArchiveOrders();
   }
+  if (tab === "stoplist" && !stoplistLoaded) {
+    loadStoplistProducts();
+  }
+}
+
+function renderStoplistProducts() {
+  const query = (stoplistSearch?.value || "").trim().toLowerCase();
+  const filtered = stoplistProducts.filter((product) => {
+    if (!query) return true;
+    return product.name.toLowerCase().includes(query) || product.category.toLowerCase().includes(query);
+  });
+  const available = filtered.filter((product) => !product.is_stopped);
+  const stopped = filtered.filter((product) => product.is_stopped);
+
+  if (stoplistAvailableEl) {
+    stoplistAvailableEl.innerHTML = available.length
+      ? available
+          .map(
+            (product) => `
+              <article class="stoplist-item">
+                <div class="stoplist-item-info">
+                  <p class="stoplist-item-name">${product.name}</p>
+                  <p class="stoplist-item-meta">${product.category} · ${formatPrice(product.price)}</p>
+                </div>
+                <button class="button button-ghost button-sm" type="button" data-stop-product="${product.id}" data-stop-value="1">
+                  В стоп
+                </button>
+              </article>
+            `,
+          )
+          .join("")
+      : `<p class="stoplist-empty">${query ? "Ничего не найдено" : "Все позиции в стоп-листе"}</p>`;
+  }
+
+  if (stoplistStoppedEl) {
+    stoplistStoppedEl.innerHTML = stopped.length
+      ? stopped
+          .map(
+            (product) => `
+              <article class="stoplist-item">
+                <div class="stoplist-item-info">
+                  <p class="stoplist-item-name">${product.name}</p>
+                  <p class="stoplist-item-meta">${product.category} · ${formatPrice(product.price)}</p>
+                </div>
+                <button class="button button-dark button-sm" type="button" data-stop-product="${product.id}" data-stop-value="0">
+                  Вернуть
+                </button>
+              </article>
+            `,
+          )
+          .join("")
+      : `<p class="stoplist-empty">${query ? "Ничего не найдено" : "Стоп-лист пуст"}</p>`;
+  }
+}
+
+async function loadStoplistProducts() {
+  if (!stoplistAvailableEl || !stoplistStoppedEl) return;
+  stoplistAvailableEl.innerHTML = `<p class="stoplist-empty">Загрузка...</p>`;
+  stoplistStoppedEl.innerHTML = "";
+  const response = await fetch("/api/admin/products", { credentials: "same-origin" });
+  if (response.status === 401) {
+    window.location.href = "/admin/login";
+    return;
+  }
+  if (!response.ok) {
+    stoplistAvailableEl.innerHTML = `<p class="stoplist-empty">Не удалось загрузить меню</p>`;
+    return;
+  }
+  stoplistProducts = await response.json();
+  stoplistLoaded = true;
+  renderStoplistProducts();
+}
+
+async function toggleStopList(productId, isStopped) {
+  const response = await fetch(`/api/admin/products/${productId}/stop-list`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
+    body: JSON.stringify({ is_stopped: isStopped }),
+  });
+  if (response.status === 401) {
+    window.location.href = "/admin/login";
+    return;
+  }
+  if (!response.ok) {
+    showToast("Не удалось обновить стоп-лист");
+    return;
+  }
+  const updated = await response.json();
+  stoplistProducts = stoplistProducts.map((product) => (product.id === updated.id ? updated : product));
+  renderStoplistProducts();
+  showToast(updated.is_stopped ? `${updated.name} — в стоп-листе` : `${updated.name} — снова в меню`);
+}
+
+function handleStoplistClick(event) {
+  const button = event.target.closest("[data-stop-product]");
+  if (!button) return;
+  const isStopped = button.dataset.stopValue === "1";
+  toggleStopList(Number(button.dataset.stopProduct), isStopped);
 }
 
 async function loadSettings() {
@@ -271,16 +496,34 @@ function handleStatusChange(event) {
 ordersEl?.addEventListener("change", handleStatusChange);
 archiveOrdersEl?.addEventListener("change", handleStatusChange);
 
-refreshBtn?.addEventListener("click", loadOrders);
+refreshBtn?.addEventListener("click", () => loadOrders());
 refreshArchiveBtn?.addEventListener("click", loadArchiveOrders);
+refreshStoplistBtn?.addEventListener("click", loadStoplistProducts);
+stoplistSearch?.addEventListener("input", renderStoplistProducts);
+stoplistAvailableEl?.addEventListener("click", handleStoplistClick);
+stoplistStoppedEl?.addEventListener("click", handleStoplistClick);
 settingsForm?.addEventListener("submit", saveSettings);
+enableNotifyBtn?.addEventListener("click", () => {
+  enableSoundNotifications();
+  if ("Notification" in window && Notification.permission === "default") {
+    Notification.requestPermission();
+  }
+});
 
 tabButtons.forEach((btn) => {
   btn.addEventListener("click", () => setActiveTab(btn.dataset.adminTab));
 });
 
-Promise.all([loadSettings(), loadOrders()]).catch(() => {
+Promise.all([loadSettings(), loadOrders()]).then(() => {
+  startOrderPolling();
+}).catch(() => {
   if (ordersEl) {
     ordersEl.innerHTML = `<article class="order-card"><h3>Ошибка загрузки</h3><p>Проверьте сервер и подключение к PostgreSQL.</p></article>`;
+  }
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) {
+    pollForNewOrders();
   }
 });
